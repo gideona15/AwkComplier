@@ -1,5 +1,8 @@
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
+
+import Token.TokenType;
 
 
 
@@ -527,6 +530,12 @@ public  class Parser {
 
                }
         } 
+        else if(isBuiltIn(helper.Peek(0).get().getType())) {               
+               
+                return Optional.of(ParseFunctionCall());
+
+               
+        } 
             Optional<Node> Bnode = ParseLValue();
             // If none of the above conditions match, attempt to parse an LValue.
             return Bnode;
@@ -606,15 +615,34 @@ public  class Parser {
             throw new AwkException("Function is incomplete; it needs parentheses");
         return parameters;
     }
+    private boolean isBuiltIn(Token.TokenType type){
 
+            HashMap<Token.TokenType,String> builtMap = new HashMap<>();
+
+            builtMap.put(Token.TokenType.PRINT, "print");
+            builtMap.put(Token.TokenType.LENGTH, "length");
+            builtMap.put(Token.TokenType.INDEX, "index");
+            builtMap.put(Token.TokenType.SUBSTR, "substr");
+            builtMap.put(Token.TokenType.SPLIT, "spit");
+            builtMap.put(Token.TokenType.GSUB, "gsub");
+            builtMap.put(Token.TokenType.SPRINTF, "sprintf");
+            builtMap.put(Token.TokenType.TOLOWER, "tolower");
+            builtMap.put(Token.TokenType.TOUPPER, "toupper");
+
+            
+        return builtMap.containsKey(type);
+    }
     private  FunctionCallNode ParseFunctionCall() throws AwkException {
         
-        String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
 
-            var paralist = ParseNodeParameters();
+              var paralist = ParseNodeParameters();
 
-        return (new FunctionCallNode(name, paralist));
- 
+            return (new FunctionCallNode(name, paralist));
+        
+
+
     }
     private IfNode ParseIf() throws AwkException {
         helper.MatchAndRemove(Token.TokenType.IF); // Match and remove the "IF" token
@@ -677,8 +705,7 @@ public  class Parser {
             // Throw an exception if the left and right parentheses are not found
             throw new AwkException("This statement needs left and right parentheses");
         }
-    }
-    
+    } 
     private DoWhileNode ParseDo() throws AwkException{
 
               helper.MatchAndRemove(Token.TokenType.DO);
