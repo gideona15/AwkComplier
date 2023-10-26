@@ -2,9 +2,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 
-import Token.TokenType;
-
-
 
 public  class Parser {
     // Fields to store the token stream, a token manager helper, and the program node
@@ -24,7 +21,7 @@ public  class Parser {
         Boolean Flnode = false, Anode = false;
         // Remove separators from the token stream
         while (helper.AcceptSeperators());
-       
+
         while (true) {
             Flnode = ParseFunction();
             Anode = ParseAction();
@@ -174,8 +171,8 @@ public  class Parser {
        if(node != null){
           Optional<Node> Newnode = Optional.of(node);
 
-
           return Newnode;
+
        }else 
           return Optional.empty();
 
@@ -185,6 +182,10 @@ public  class Parser {
         // This method appears to handle assignment operations in your Awk script.
         Node node = Ternary();
     
+
+        if(!helper.MoreTokens())
+                return node;
+
         // It checks various assignment operators (e.g., '=', '+=', '-=', etc.) and constructs AssignmentNode objects accordingly.
     
         if(helper.Peek(0).get().getType() ==  Token.TokenType.EQUAL){
@@ -240,6 +241,10 @@ public  class Parser {
     private Node Ternary() throws AwkException {
         // This method appears to handle the ternary conditional operator '?' in your Awk script.
         Node node = LogicalOr();
+
+
+        if(!helper.MoreTokens())
+                return node;
     
         if (helper.Peek(0).get().getType() == Token.TokenType.CONDITIONAL_QUESTION) {
             var output = OperationNode.Operation.CONDITIONAL_QUESTION;
@@ -254,6 +259,10 @@ public  class Parser {
     private Node LogicalOr() throws AwkException {
         // This method appears to handle logical OR operations in your Awk script.
         Node node = LogicalAnd();
+
+
+        if(!helper.MoreTokens())
+                return node;
     
         if (helper.Peek(0).get().getType() == Token.TokenType.LOGICAL_OR) {
             var output = OperationNode.Operation.LOGICAL_OR;
@@ -268,6 +277,10 @@ public  class Parser {
     private Node LogicalAnd() throws AwkException {
         // This method handles logical AND operations in your Awk script.
         Node node = ArrayMembership();
+
+
+        if(!helper.MoreTokens())
+                return node;
     
         if (helper.Peek(0).get().getType() == Token.TokenType.LOGICAL_AND) {
             // Check if the next token is a logical AND operator '&&'.
@@ -284,6 +297,10 @@ public  class Parser {
 
         Node node = Match();
 
+
+        if(!helper.MoreTokens())
+                return node;
+
         if (helper.Peek(0).get().getType() == Token.TokenType.IN) {
         // If the next token is a field reference symbol, parse it as a field reference operation.
          helper.MatchAndRemove(Token.TokenType.IN);
@@ -298,6 +315,10 @@ public  class Parser {
         // This method handles matching and non-matching operations in your Awk script.
         Node node = BooleanCompare();
     
+
+        if(!helper.MoreTokens())
+                return node;
+
         if (helper.Peek(0).get().getType() == Token.TokenType.MATCH) {
             // Check if the next token is a matching operator '~'.
             var output = OperationNode.Operation.MATCH;
@@ -318,7 +339,9 @@ public  class Parser {
     private Node BooleanCompare() throws AwkException {
         // This method handles boolean comparison operations, such as less than, equal to, etc.
         Node node = Concatenation();
-    
+
+        if(!helper.MoreTokens())
+                return node;
         // Check various boolean comparison operators and construct the corresponding OperationNode.
     
         if(helper.Peek(0).get().getType() ==  Token.TokenType.LESS_THAN){
@@ -362,7 +385,6 @@ public  class Parser {
     private Node Concatenation() throws AwkException{
 
         Node node = Expression();
-
         
         
 
@@ -373,6 +395,9 @@ public  class Parser {
         // This method handles general expressions in your Awk script.
         Node node = Term();
     
+
+        if(!helper.MoreTokens())
+                return node;
         // Check for addition and subtraction operators and construct the corresponding OperationNode.
     
         if(helper.Peek(0).get().getType() ==  Token.TokenType.ADDITION){
@@ -393,6 +418,10 @@ public  class Parser {
     private Node Term() throws AwkException{
 
         Node node = Factor();
+
+
+        if(!helper.MoreTokens())
+                return node;
 
         if(helper.Peek(0).get().getType() ==  Token.TokenType.MULTIPLICATION){
 
@@ -416,7 +445,11 @@ public  class Parser {
     }
     private Node Factor() throws AwkException{
 
+        
         Node node =  PostImcreDrce();
+
+        if(!helper.MoreTokens())
+                return node;
 
          if(helper.Peek(0).get().getType() ==  Token.TokenType.EXPONENT){
 
@@ -434,6 +467,9 @@ public  class Parser {
 
         if(!node.isPresent())
                 return null;
+
+        if(!helper.MoreTokens())
+                return node.get();
 
 
         if(helper.Peek(0).get().getType() ==  Token.TokenType.INCREMENT){
@@ -460,10 +496,10 @@ public  class Parser {
             helper.MatchAndRemove(Token.TokenType.NUMBER);
             return Optional.of(new ConstantNode(output));
 
-        } else if (helper.Peek(0).get().getType() == Token.TokenType.STRING_LITERAL) {
+        } else if (helper.Peek(0).get().getType() == Token.TokenType.STRINGLITERAL) {
             // If the next token is a string literal, parse it as a ConstantNode.
             var output = helper.Peek(0).get().getValue();
-            helper.MatchAndRemove(Token.TokenType.STRING_LITERAL);
+            helper.MatchAndRemove(Token.TokenType.STRINGLITERAL);
             return Optional.of(new ConstantNode(output));
 
         } else if (helper.Peek(0).get().getType() == Token.TokenType.Pattern) {
@@ -532,6 +568,7 @@ public  class Parser {
         } 
         else if(isBuiltIn(helper.Peek(0).get().getType())) {               
                
+            
                 return Optional.of(ParseFunctionCall());
 
                
@@ -598,6 +635,7 @@ public  class Parser {
     private LinkedList<Node> ParseNodeParameters() throws AwkException {
 
         LinkedList<Node> parameters = new LinkedList<>();
+
         if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_PAREN) {
             helper.MatchAndRemove(Token.TokenType.LEFT_PAREN);
             while (helper.Peek(0).get().getType() != Token.TokenType.RIGHT_PAREN) {
@@ -628,19 +666,143 @@ public  class Parser {
             builtMap.put(Token.TokenType.SPRINTF, "sprintf");
             builtMap.put(Token.TokenType.TOLOWER, "tolower");
             builtMap.put(Token.TokenType.TOUPPER, "toupper");
+            builtMap.put(Token.TokenType.PRINTF, "toupper");
+            builtMap.put(Token.TokenType.SUB, "tolower");
+            builtMap.put(Token.TokenType.NEXT, "toupper");
+            builtMap.put(Token.TokenType.MATCH, "toupper");
 
-            
+
         return builtMap.containsKey(type);
     }
-    private  FunctionCallNode ParseFunctionCall() throws AwkException {
-        
+    private FunctionCallNode ParseFunctionCall() throws AwkException {
+
+
+         if(helper.Peek(0).get().getType() == Token.TokenType.WORD) {               
+            
                    
             String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
 
               var paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.PRINT) {               
+            
+            String name = helper.MatchAndRemove(Token.TokenType.PRINT).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.PRINTF) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.PRINTF).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.LENGTH) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.LENGTH).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.INDEX) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.INDEX).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.SUBSTR) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.SUBSTR).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.SPLIT) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.SPLIT).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.GSUB) {               
         
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.GSUB).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+              return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.SPRINTF) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.SPRINTF).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.TOLOWER) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.TOLOWER).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.TOUPPER) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.TOUPPER).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.NEXT) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.NEXT).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.MATCH) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.MATCH).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+          else if(helper.Peek(0).get().getType() == Token.TokenType.SUB) {               
+            
+                   
+            String name = helper.MatchAndRemove(Token.TokenType.SUB).get().getValue().toString();
+
+              var paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+         }
+         return null;
 
 
     }
@@ -816,24 +978,23 @@ public  class Parser {
     
             // Parse an assignment operation
             var Assignment = ParseOperation();
-    
             // Check if the next token is a separator
-            if (helper.Peek(0).get().getType() != Token.TokenType.SEPARATOR) {
+            if (helper.Peek(0).get().getType() != Token.TokenType.SEMICOLON) {
                 throw new AwkException("Needs a colon");
             } else {
                 // Consume the separator
-                helper.MatchAndRemove(Token.TokenType.SEPARATOR);
+                helper.MatchAndRemove(Token.TokenType.SEMICOLON);
             }
     
             // Parse a condition operation
             var Condition = ParseOperation();
     
             // Check if the next token is a separator
-            if (helper.Peek(0).get().getType() != Token.TokenType.SEPARATOR) {
+            if (helper.Peek(0).get().getType() != Token.TokenType.SEMICOLON) {
                 throw new AwkException("Needs a colon");
             } else {
                 // Consume the separator
-                helper.MatchAndRemove(Token.TokenType.SEPARATOR);
+                helper.MatchAndRemove(Token.TokenType.SEMICOLON);
             }
     
             // Parse an iteration operation
@@ -863,7 +1024,7 @@ public  class Parser {
         }
     }
     
-private ContinueNode ParseContine() throws AwkException {
+    private ContinueNode ParseContine() throws AwkException {
     helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
     return new ContinueNode(); // Create and return a new ContinueNode
 }

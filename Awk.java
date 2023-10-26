@@ -16,7 +16,7 @@ public class Awk {
 
             Path myPath = Paths.get("/Users/gideonmax/Downloads/text.txt");
             content = new String(Files.readAllBytes(myPath));
-
+           
         } catch (IOException e) {
             // Handle any IOException by creating an AwkException
             new AwkException(e.toString());

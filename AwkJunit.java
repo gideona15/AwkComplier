@@ -61,13 +61,13 @@ public void TestProcessLettersAndNumbers() throws Exception{
 @Test
 public void TestFullLine1() throws Exception
         {
-            var lexer = new Lexer("$0 = tolower($0)");
+            var lexer = new Lexer("$0 = toblower($0)");
             var tokens = lexer.Lex();
             assertEquals(9, tokens.size());
             assertEquals(new Token(Token.TokenType.FIELD_REFERENCE,"$",0, 0).toString(), tokens.get(0).toString());
             assertEquals(new Token(Token.TokenType.NUMBER,"0",0, 0).toString(), tokens.get(1).toString());
             assertEquals(new Token(Token.TokenType.EQUAL,"=",0, 0).toString(), tokens.get(2).toString());
-            assertEquals(new Token(Token.TokenType.WORD,"tolower",0, 0).toString(), tokens.get(3).toString());
+            assertEquals(new Token(Token.TokenType.WORD,"toblower",0, 0).toString(), tokens.get(3).toString());
             assertEquals(new Token(Token.TokenType.LEFT_PAREN,"(",0, 0).toString(), tokens.get(4).toString());
             assertEquals(new Token(Token.TokenType.FIELD_REFERENCE,"$",0, 0).toString(), tokens.get(5).toString());
             assertEquals(new Token(Token.TokenType.NUMBER,"0",0, 0).toString(), tokens.get(6).toString());

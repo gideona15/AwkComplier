@@ -12,6 +12,9 @@ public class FunctionDefinitionNode extends Node {
     private LinkedList<StatementNode> StateNode;
      
     // Constructor to initialize the FunctionDefinitionNode
+    public FunctionDefinitionNode() {
+        
+    }
     public FunctionDefinitionNode(String name, LinkedList<Token> Tinput, LinkedList<StatementNode> Sinput) {
         this.functionname = name;
         this.Parameters = Tinput;
@@ -27,6 +30,9 @@ public class FunctionDefinitionNode extends Node {
         }
         
         return convert;
+    }
+    public String getName(){
+        return functionname;
     }
 
     // Returns a string representation of the FunctionDefinitionNode

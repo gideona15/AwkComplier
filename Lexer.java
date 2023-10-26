@@ -291,7 +291,7 @@ public LinkedList<Token> TokenHolder() {
        STT.put("*", Token.TokenType.MULTIPLICATION);
        STT.put("/", Token.TokenType.DIVISION);
        STT.put("%", Token.TokenType.MODULUS);
-       STT.put(";", Token.TokenType.SEPARATOR);
+       STT.put(";", Token.TokenType.SEMICOLON);
        STT.put("\n",Token.TokenType.SEPARATOR);
        STT.put("|", Token.TokenType.BITWISE_OR);
        STT.put(",", Token.TokenType.COMMA);

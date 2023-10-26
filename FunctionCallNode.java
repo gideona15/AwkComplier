@@ -25,6 +25,6 @@ public class FunctionCallNode extends StatementNode {
     public String toString() {
         // Construct the string representation in the format "functionName(parameters)"
         // Note that parameters is a LinkedList, so we rely on its default toString()
-        return functionName + "(" + parameters + ")";
+        return "FunctionName: "+functionName + "(" + parameters + ")";
     }
 }
