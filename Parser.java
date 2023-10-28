@@ -637,7 +637,9 @@ public  class Parser {
         LinkedList<Node> parameters = new LinkedList<>();
 
         if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_PAREN) {
+            
             helper.MatchAndRemove(Token.TokenType.LEFT_PAREN);
+            
             while (helper.Peek(0).get().getType() != Token.TokenType.RIGHT_PAREN) {
                 if (helper.Peek(0).get().getType() == Token.TokenType.COMMA) {
                     helper.MatchAndRemove(Token.TokenType.COMMA);
@@ -1022,8 +1024,7 @@ public  class Parser {
             // Throw an exception if the left and right parentheses are not found
             throw new AwkException("This for statement needs left and right parentheses");
         }
-    }
-    
+    } 
     private ContinueNode ParseContine() throws AwkException {
     helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
     return new ContinueNode(); // Create and return a new ContinueNode

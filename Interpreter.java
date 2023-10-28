@@ -6,15 +6,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Interpreter {
     private HashMap<String, InterpreterDataType> globalVariables = null;
     private HashMap<String, FunctionDefinitionNode> functionDefinitions = null;
+    private LineManager lineManagement;
 
     public Interpreter(ProgramNode input, Path file) throws IOException {
         globalVariables = new HashMap<>();
         functionDefinitions = new HashMap<>();
-        startLineManager(file);
+        lineManagement = startLineManager(file);
         addFunctionDefinition(input);
 
     }
@@ -82,30 +85,59 @@ public class Interpreter {
         return functionDefinitions.get(name);
     }
     
-    public void startLineManager(Path file) throws IOException{
+    public LineManager startLineManager(Path file) throws IOException{
 
         if(file != null)
-            new LineManager(Files.readAllLines(file));
+            return new LineManager(Files.readAllLines(file));
         else 
-            new LineManager(new LinkedList<String>());
+            return new LineManager(new LinkedList<String>());
             
     }
     
     public void addBuiltInFunctions(){
 
-
-         Function<String, Function<String,String>> operations;
-          operations.put("print",  builtInPrint("print", new InterpreterDataType()));
-
-
+         HashMap<String, BuiltInFunctionDefinitionNode> operations = new HashMap<>();
+      
+        BuiltInFunctionDefinitionNode printfBuilt = new BuiltInFunctionDefinitionNode("printf",test -> builtInPrint(test), true);
+        BuiltInFunctionDefinitionNode printBuilt = new BuiltInFunctionDefinitionNode("print",test -> builtInPrint(test), true);
+        BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInGetline(test), true);
+        BuiltInFunctionDefinitionNode Nextbuilt= new BuiltInFunctionDefinitionNode("next",test -> builtInGetline(test), false);
+        BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInGetline(test), true);
+        BuiltInFunctionDefinitionNode printBuilt = new BuiltInFunctionDefinitionNode("print",test -> builtInPrint(test), true);
+        BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInGetline(test), true);
+        
+        //getline and next : these will call SplitAndAssign – we won’t do the other forms.
+        operations.put("print", printBuilt);
+        operations.put("getline", getLineBuilt);
+        operations.put("printf", printBuilt);
+        operations.put("next", getLineBuilt);
+        operations.put("next", getLineBuilt);
+        operations.put("next", getLineBuilt);
 
     }
-    public Function<String,String> builtInPrint(String str, InterpreterDataType type){
+    public String builtInPrint( HashMap<String, InterpreterDataType> str){
+        System.out.printf("%d %d %d", str);
+        return " ";
+    }
+     public String builtInGetline( HashMap<String, InterpreterDataType> str){
+        return Boolean.toString(this.lineManagement.SplitAndAssign());
 
-         Function<String, Function<String,String>> operations;
-         operations.apply()
-
-        return ;
+    }  
+    public String builtInGsub(String regexp, String replacement, String input) {
+         return java.util.regex.Pattern.compile(regexp).matcher(input).replaceAll(replacement);
+    }
+    public String builtInMatch(String regexp, String input) {
+        Pattern pattern = Pattern.compile(regexp);
+        Matcher matcher = pattern.matcher(input);
+       // java.util.regex.Pattern.compile(regexp).matcher(input).find();
+        return Boolean.toString(matcher.find());
+    }
+    public String builtISub(String regexp, String replacement, String input) {
+        Pattern pattern = Pattern.compile(regexp);
+        Matcher matcher = pattern.matcher(input);
+        String result = matcher.replaceFirst(replacement);
+       //return java.util.regex.Pattern.compile(regexp).matcher(input).replaceFirst(replacement);
+        return result;
     }
 
     // Define other interpreter methods and logic here

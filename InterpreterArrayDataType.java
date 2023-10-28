@@ -1,6 +1,6 @@
 import java.util.HashMap;
 
-public class InterpreterArrayDataType {
+public class InterpreterArrayDataType{
     
     private HashMap<String, InterpreterDataType> array;
 
