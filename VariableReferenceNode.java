@@ -9,6 +9,12 @@ public class VariableReferenceNode extends StatementNode {
         this.name = name;
         this.expression = expression;
     }
+    public String getString(){
+        return name;
+    }
+    public Optional<Node> getExperssion(){
+        return expression;
+    }
 
     @Override
     public String toString() {

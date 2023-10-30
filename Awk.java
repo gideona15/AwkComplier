@@ -47,7 +47,6 @@ public class Awk {
         System.out.println("\n_____________Interpreter___________");
        
         Interpreter interpret = new Interpreter(parsed, myPath);
-        System.out.println(interpret.getGlobalVariable("NF"));
 
 
 

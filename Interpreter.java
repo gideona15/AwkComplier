@@ -85,6 +85,7 @@ import java.util.regex.Pattern;
          globalVariables.put("$0", new InterpreterDataType(lines));
 
     }
+
     }
     
     public void addGlobalVariable(String name, InterpreterDataType value) {
@@ -243,6 +244,93 @@ import java.util.regex.Pattern;
 
         return upper;
     }    
-    // Define other interpreter methods and logic here
-}
+   
+     private InterpreterDataType getInterpreterDataType(Node node) throws AwkException{
 
+        HashMap<String, InterpreterDataType> localVariables = new HashMap<>();
+
+            if(node instanceof AssignmentNode){
+             AssignmentNode newNode = (AssignmentNode)node;
+             
+                if(!(newNode.getTargert() instanceof VariableReferenceNode) && !(newNode.getOperattion()== OperationNode.Operation.FIELD_REFERENCE))
+                   throw new AwkException("This is not a vaild AssignmentNode");
+                
+                   return getInterpreterDataType(newNode.getExpression());
+            }
+            else if (node instanceof TernaryNode){
+              TernaryNode newNode = (TernaryNode)node;
+
+             var bool = getInterpreterDataType(newNode.getBoolNode());
+    
+                if(bool == null)
+                   throw new AwkException("This is not a vaild TernaryNode, Boolean id null");
+
+                if(!bool.toString().equals("false") || !bool.toString().equals("true"))
+                   throw new AwkException("This is not a vaild TernaryNode, needs a vaild boolean experssion");
+            
+                    if(Boolean.parseBoolean(bool.toString())){
+                        return getInterpreterDataType(newNode.getTrueCase());
+                    }
+                    else 
+                        return getInterpreterDataType(newNode.getFalseNode());
+
+            }
+            else if (node instanceof VariableReferenceNode ){
+                VariableReferenceNode newNode = (VariableReferenceNode)node;
+
+                if(newNode.getExperssion().isEmpty()){
+                    if(this.globalVariables.containsKey(newNode.toString()))
+                       return getGlobalVariable(newNode.getString());
+                }
+                if(newNode.getExperssion().isEmpty()){
+                    if(localVariables.containsKey(newNode.toString()))
+                        return localVariables.get(newNode.getString());
+                }
+                else if(newNode.getExperssion().isPresent()){
+                  var exp = getInterpreterDataType(newNode.getExperssion().get());
+
+                    if(!(exp instanceof InterpreterDataType))
+                         throw new AwkException("Not an Array DataType");
+
+                    if(this.globalVariables.containsKey(newNode.getString()+"["+ exp.toString() +"]"))
+                        return getGlobalVariable(newNode.getString()+"["+ exp.toString() +"]");
+                   
+                    if(localVariables.containsKey(newNode.getString()+"["+ exp.toString() +"]"))
+                        return localVariables.get(newNode.getString()+"["+ exp.toString() +"]");
+                
+                }
+            }
+            else if (node instanceof OperationNode){
+                OperationNode newNode = (OperationNode)node;
+
+                
+            }
+
+            else if(node instanceof FunctionCallNode){
+              FunctionCallNode newNode = (FunctionCallNode)node;
+             
+                   return new InterpreterDataType(runFunctionCall(newNode, localVariables));
+            }
+            else if (node instanceof ConstantNode){
+              ConstantNode newNode = (ConstantNode)node;
+             
+                   return new InterpreterDataType(newNode.toString());
+
+            }
+            else if (node instanceof PatternNode){
+                throw new AwkException("Cannot pass a pattern to a function or an assignment");
+
+            }
+            
+            
+
+
+
+        
+        return null;
+    }
+    private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables){
+
+        return "";
+    }
+}

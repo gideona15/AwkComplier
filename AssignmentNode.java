@@ -12,10 +12,21 @@ public class AssignmentNode extends StatementNode {
     this.op = op;
    }
 
+   public Node getTargert(){
+    return target;
+   }
+   public Node getExpression(){
+    return expression;
+   }
+   public OperationNode.Operation getOperattion(){
+    return op;
+   }
+
    public String toString(){
 
     return op.toString()+" "+ target +" => "+ expression;
    
 }
+
 }
 

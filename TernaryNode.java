@@ -11,6 +11,15 @@ public class TernaryNode extends StatementNode {
         this.TrueCase = caseOne;
         this.FalseCase = caseTwo;
     }
+    public Node getBoolNode(){
+        return booleanNode;
+    }
+    public Node getTrueCase(){
+        return TrueCase;
+    }
+    public Node getFalseNode(){
+        return FalseCase;
+    }
 
     public String toString() {
         return "TernaryNode{" +
