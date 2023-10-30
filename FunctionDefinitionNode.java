@@ -15,10 +15,10 @@ public class FunctionDefinitionNode extends Node {
     public FunctionDefinitionNode() {
         
     }
-    public FunctionDefinitionNode(String name, LinkedList<Token> Tinput, LinkedList<StatementNode> Sinput) {
+    public FunctionDefinitionNode(String name, LinkedList<Token> Parametersinput, LinkedList<StatementNode> Statementinput) {
         this.functionname = name;
-        this.Parameters = Tinput;
-        this.StateNode = Sinput;
+        this.Parameters = Parametersinput;
+        this.StateNode = Statementinput;
     }
     
     // Converts the list of parameter tokens to a list of their values as strings

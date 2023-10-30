@@ -489,7 +489,7 @@ public  class Parser {
     }
     private Optional<Node> ParseBottomLevel() throws AwkException {
 
-
+       
         if (helper.Peek(0).get().getType() == Token.TokenType.NUMBER) {
             // If the next token is a number, parse it as a ConstantNode.
             var output = helper.Peek(0).get().getValue();
@@ -655,6 +655,20 @@ public  class Parser {
             throw new AwkException("Function is incomplete; it needs parentheses");
         return parameters;
     }
+    private LinkedList<Node> ParseNodeParametersNoParen() throws AwkException {
+
+        LinkedList<Node> parameters = new LinkedList<>();
+           
+                 var Pnode = ParseOperation();
+                    if(Pnode.isPresent()){
+                    parameters.add(Pnode.get());
+                    }
+                    else
+                      throw new AwkException("incorrect statement!");
+                
+
+            return parameters;
+    }
     private boolean isBuiltIn(Token.TokenType type){
 
             HashMap<Token.TokenType,String> builtMap = new HashMap<>();
@@ -680,130 +694,171 @@ public  class Parser {
 
 
          if(helper.Peek(0).get().getType() == Token.TokenType.WORD) {               
-            
-                   
+            LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.PRINT) {               
-            
+           LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.PRINT).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+        }
          else if(helper.Peek(0).get().getType() == Token.TokenType.PRINTF) {               
             
-                   
+            LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.PRINTF).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+        }
          else if(helper.Peek(0).get().getType() == Token.TokenType.LENGTH) {               
-            
-                   
+           
+            LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.LENGTH).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+           }
          else if(helper.Peek(0).get().getType() == Token.TokenType.INDEX) {               
-            
                    
+            LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.INDEX).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.SUBSTR) {               
-            
-                   
+       
+            LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.SUBSTR).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+              }
          else if(helper.Peek(0).get().getType() == Token.TokenType.SPLIT) {               
             
-                   
-            String name = helper.MatchAndRemove(Token.TokenType.SPLIT).get().getValue().toString();
+          LinkedList<Node> paralist;   
+            String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
+
+            return (new FunctionCallNode(name, paralist));
+          }
+         else if(helper.Peek(0).get().getType() == Token.TokenType.GSUB) {               
+        
+           LinkedList<Node> paralist;   
+            String name = helper.MatchAndRemove(Token.TokenType.GSUB).get().getValue().toString();
+
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
-         else if(helper.Peek(0).get().getType() == Token.TokenType.GSUB) {               
-        
-                   
-            String name = helper.MatchAndRemove(Token.TokenType.GSUB).get().getValue().toString();
-
-              var paralist = ParseNodeParameters();
-
-              return (new FunctionCallNode(name, paralist));
-         }
          else if(helper.Peek(0).get().getType() == Token.TokenType.SPRINTF) {               
-            
                    
+           LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.SPRINTF).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.TOLOWER) {               
-            
-                   
+           LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.TOLOWER).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.TOUPPER) {               
             
-                   
+           LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.TOUPPER).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.NEXT) {               
             
-                   
+          LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.NEXT).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+          }
          else if(helper.Peek(0).get().getType() == Token.TokenType.MATCH) {               
             
-                   
+           LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.MATCH).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
          }
           else if(helper.Peek(0).get().getType() == Token.TokenType.SUB) {               
             
                    
+         LinkedList<Node> paralist;   
             String name = helper.MatchAndRemove(Token.TokenType.SUB).get().getValue().toString();
 
-              var paralist = ParseNodeParameters();
+             if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
+                paralist = ParseNodeParametersNoParen();
+             else
+                paralist = ParseNodeParameters();
 
             return (new FunctionCallNode(name, paralist));
-         }
+              }
          return null;
 
 
@@ -1029,7 +1084,7 @@ public  class Parser {
     helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
     return new ContinueNode(); // Create and return a new ContinueNode
 }
-
+    
 private ReturnNode ParseReturn() throws AwkException {
     helper.MatchAndRemove(Token.TokenType.RETURN); // Match and remove the "RETURN" token
 

@@ -9,17 +9,18 @@ import java.util.LinkedList;
  */
 public class Awk {
     
-    public static void main(String[] args) throws AwkException {
-        String content = " print(5)";
+    public static void main(String[] args) throws AwkException, IOException {
+        String content;
+        Path myPath = null;
         try {
             // Define the path to the input file and read the content of the file
 
-            Path myPath = Paths.get("/Users/gideonmax/Downloads/text.txt");
+            myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
             content = new String(Files.readAllBytes(myPath));
            
         } catch (IOException e) {
             // Handle any IOException by creating an AwkException
-            new AwkException(e.toString());
+            throw new AwkException(e.toString());
     
         }
         
@@ -41,5 +42,15 @@ public class Awk {
         ProgramNode parsed = parse.program();
 
         System.out.println(parsed.toString());
+
+
+        System.out.println("\n_____________Interpreter___________");
+       
+        Interpreter interpret = new Interpreter(parsed, myPath);
+        System.out.println(interpret.getGlobalVariable("NF"));
+
+
+
+
     }
 }

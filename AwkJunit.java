@@ -1,5 +1,8 @@
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -517,6 +520,60 @@ public void TestyyParseOperation3() throws AwkException {
   }
 
 
- 
- 
+
+  // Interpter
+  @Test
+public void TestParseBuiltIn() throws AwkException {
+    // Create a lexer, tokenize the input, and parse an operation node
+    var lexer = new Lexer("print (3)");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+
+    var node = parse.ParseOperation().get();
+
+    // Check if the parsed node is an instance of FunctionCallNode
+    boolean isNodeFunctionCall = node instanceof FunctionCallNode;
+    assertEquals(true, isNodeFunctionCall);
+
+    // Create expected parameters and compare the parsed node to the expected syntax tree structure
+    var para = new LinkedList<Node>();
+    para.add(new ConstantNode(3));
+    assertEquals(new FunctionCallNode("print", para).toString(), node.toString());
+}
+
+@Test
+public void TestParseBuiltIn2() throws AwkException {
+    // Create a lexer, tokenize the input, and parse an operation node
+    var lexer = new Lexer("substr (a, 3, 7)");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+
+    var node = parse.ParseOperation().get();
+
+    // Check if the parsed node is an instance of FunctionCallNode
+    boolean isNodeFunctionCall = node instanceof FunctionCallNode;
+    assertEquals(true, isNodeFunctionCall);
+
+    // Create expected parameters and compare the parsed node to the expected syntax tree structure
+    var para = new LinkedList<Node>();
+    para.add(new VariableReferenceNode("a", Optional.empty()));
+    para.add(new ConstantNode(3));
+    para.add(new ConstantNode(7));
+    assertEquals(new FunctionCallNode("substr", para).toString(), node.toString());
+}
+
+@Test
+public void TestInterpreter() throws AwkException, IOException {
+    // Define the file path and create a lexer, tokenize the input, and parse the program
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer(" print helloo sub (t)");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    // Create an interpreter and evaluate the global variable "NF"
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    assertEquals(interpret.getGlobalVariable("NF").toString(), Integer.toString(4).toString());
+}
+
     }
