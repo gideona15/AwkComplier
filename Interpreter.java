@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -252,9 +253,15 @@ import java.util.regex.Pattern;
             if(node instanceof AssignmentNode){
              AssignmentNode newNode = (AssignmentNode)node;
              
-                if(!(newNode.getTargert() instanceof VariableReferenceNode) && !(newNode.getOperattion()== OperationNode.Operation.FIELD_REFERENCE))
+                if(!(newNode.getTargert() instanceof VariableReferenceNode) || !(newNode.getOperattion()== OperationNode.Operation.FIELD_REFERENCE))
                    throw new AwkException("This is not a vaild AssignmentNode");
                 
+                     var variable =(VariableReferenceNode)newNode.getTargert();
+                   if(globalVariables.containsKey(variable.getString())){
+                      getGlobalVariable(variable.getString()).setValue(getInterpreterDataType(newNode.getExpression()).toString());
+                   }
+                     else
+                       globalVariables.put(variable.getString(), getInterpreterDataType(newNode.getExpression()));
                    return getInterpreterDataType(newNode.getExpression());
             }
             else if (node instanceof TernaryNode){
@@ -302,6 +309,28 @@ import java.util.regex.Pattern;
             }
             else if (node instanceof OperationNode){
                 OperationNode newNode = (OperationNode)node;
+                var leftNode = newNode.getLeftExpression();
+                var rightNode = newNode.getRightExpression();
+                var operationNode = newNode.getOp();
+               
+                if(leftNode == null)
+                   throw new AwkException("Left operation is null");
+                
+
+
+                switch(operationNode){
+
+                    case ADDITION:
+                        if(!rightNode.isPresent())
+                            throw new AwkException("Right operation is not present");
+                       
+                        Float value = Float.parseFloat(getInterpreterDataType(leftNode).toString() + getInterpreterDataType(rightNode.get()).toString());
+                        
+                        return new InterpreterDataType(value.toString());
+
+
+                }
+
 
                 
             }
@@ -318,7 +347,7 @@ import java.util.regex.Pattern;
 
             }
             else if (node instanceof PatternNode){
-                throw new AwkException("Cannot pass a pattern to a function or an assignment");
+                    throw new AwkException("Cannot pass a pattern to a function or an assignment");
 
             }
             
@@ -332,5 +361,106 @@ import java.util.regex.Pattern;
     private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables){
 
         return "";
+    }
+
+    private InterpreterDataType getArithmeticIDT(Node left, Optional<Node> right, OperationNode.Operation op ) throws AwkException{
+         if(!right.isPresent())
+                            throw new AwkException("Right operation is not present");
+                       
+       switch(op){
+
+                    case ADDITION:  
+                        Float Avalue = Float.parseFloat(getInterpreterDataType(left).toString()) + Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(Avalue.toString());
+                            
+                    case SUBTRACTION:  
+                        Float Svalue = Float.parseFloat(getInterpreterDataType(left).toString()) - Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(Svalue.toString());
+
+                    case MULTIPLICATION:  
+                        Float Mvalue = Float.parseFloat(getInterpreterDataType(left).toString()) * Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(Mvalue.toString());
+                            
+                    case DIVISION:  
+                        Float Dvalue = Float.parseFloat(getInterpreterDataType(left).toString()) / Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(Dvalue.toString());
+
+                    case MODULUS:  
+                        Float MODvalue = Float.parseFloat(getInterpreterDataType(left).toString()) % Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(MODvalue.toString());
+
+
+
+                    case LOGICAL_EQUAL:  
+                        Boolean EQUALvalue = Float.parseFloat(getInterpreterDataType(left).toString()) == Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(EQUALvalue.toString());
+                            
+                    case LOGICAL_NOT:  
+                        Boolean NOTvalue = Float.parseFloat(getInterpreterDataType(left).toString()) != Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(NOTvalue.toString());
+
+                    case LESS_THAN:  
+                        Boolean LESS_THANvalue = Float.parseFloat(getInterpreterDataType(left).toString()) < Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(LESS_THANvalue.toString());
+                            
+                    case LESS_THAN_EQUAL:  
+                        Boolean LESS_THAN_EQUALvalue = Float.parseFloat(getInterpreterDataType(left).toString()) <= Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(LESS_THAN_EQUALvalue.toString());
+
+                    case GREATER_THAN:  
+                        Boolean GREATER_THANvalue = Float.parseFloat(getInterpreterDataType(left).toString()) > Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(GREATER_THANvalue.toString());
+                            
+                    case GREATER_THAN_EQUAL:  
+                        Boolean GREATER_THAN_EQUALvalue = Float.parseFloat(getInterpreterDataType(left).toString()) >= Float.parseFloat(getInterpreterDataType(right.get()).toString());
+                               return new InterpreterDataType(GREATER_THAN_EQUALvalue.toString());
+      
+
+      
+                    case LOGICAL_AND:  
+
+                         Boolean Lvalue = Boolean.parseBoolean(getInterpreterDataType(left).toString());
+                         Boolean Rvalue = Boolean.parseBoolean(getInterpreterDataType(right.get()).toString());
+
+                        Boolean LOGICAL_ANDvalue = Lvalue && Rvalue;
+                               return new InterpreterDataType(LOGICAL_ANDvalue.toString());
+
+                    case LOGICAL_OR:  
+                         Boolean LLvalue = Boolean.parseBoolean(getInterpreterDataType(left).toString());
+                         Boolean RRvalue = Boolean.parseBoolean(getInterpreterDataType(right.get()).toString());
+
+                        Boolean LOGICAL_ORvalue = LLvalue || RRvalue;
+                               return new InterpreterDataType(LOGICAL_ORvalue.toString());
+     
+                    case NOT_EQUAL:  
+                         Boolean LLLvalue = Boolean.parseBoolean(getInterpreterDataType(left).toString());
+                         Boolean RRRvalue = Boolean.parseBoolean(getInterpreterDataType(right.get()).toString());
+
+                        Boolean NOT_EQUALvalue = LLLvalue || RRRvalue;
+                               return new InterpreterDataType(NOT_EQUALvalue.toString());
+
+
+                    case MATCH:  
+                         InterpreterDataType LvalueExp = getInterpreterDataType(left);
+
+                         Boolean RRvalue = Boolean.parseBoolean(getInterpreterDataType(right.get()).toString());
+
+                        Boolean LOGICAL_ORvalue = LLvalue || RRvalue;
+
+                             java.util.regex.Pattern.compile("regexp").matcher("input");
+
+                               return new InterpreterDataType(LOGICAL_ORvalue.toString());
+     
+                    case NON_MATCH:  
+                         Boolean LLLvalue = Boolean.parseBoolean(getInterpreterDataType(left).toString());
+                         Boolean RRRvalue = Boolean.parseBoolean(getInterpreterDataType(right.get()).toString());
+
+                        Boolean NOT_EQUALvalue = LLLvalue || RRRvalue;
+                               return new InterpreterDataType(NOT_EQUALvalue.toString());
+     
+
+                }
+
+                return null;
     }
 }
