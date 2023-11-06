@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
+import javax.swing.text.html.BlockView;
+
 /**
  * The main class for the AWK lexer and parser application.
  */
@@ -47,6 +49,16 @@ public class Awk {
         System.out.println("\n_____________Interpreter___________");
        
         Interpreter interpret = new Interpreter(parsed, myPath);
+        for( Node lines : parsed.getOther()){
+                BlockNode block = (BlockNode)lines;
+        for( Node line : block.getSnode()){
+
+        interpret.getInterpreterDataType(line);
+    }}
+
+               System.out.println(interpret.getGlobalVariable("b"));
+               System.out.println(interpret.getGlobalVariable("a"));
+                System.out.println(interpret.getGlobalVariable("n"));
 
 
 

@@ -1,4 +1,4 @@
-public class PatternNode extends Node {
+public class PatternNode extends StatementNode {
     private Object value;
 
     public PatternNode(Object input){

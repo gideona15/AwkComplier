@@ -192,46 +192,46 @@ public  class Parser {
 
             var output = OperationNode.Operation.ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.EQUAL);
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.EXPONENTIATION_ASSIGNMENT){
 
             var output = OperationNode.Operation.EXPONENTIATION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.EXPONENTIATION_ASSIGNMENT);
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.MODULUS_ASSIGNMENT){
 
             var output = OperationNode.Operation.MODULUS_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.MODULUS_ASSIGNMENT);
                 
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
       
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.MULTIPLICATION_ASSIGNMENT){
 
             var output = OperationNode.Operation.MULTIPLICATION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.MULTIPLICATION_ASSIGNMENT);
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
       
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.DIVISION_ASSIGNMENT){
 
             var output = OperationNode.Operation.DIVISION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.DIVISION_ASSIGNMENT);
                
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.SUBTRACTION_ASSIGNMENT){
 
             var output = OperationNode.Operation.SUBTRACTION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.SUBTRACTION_ASSIGNMENT);
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
        
            }
            else if(helper.Peek(0).get().getType() ==  Token.TokenType.ADDITION_ASSIGNMENT){
 
             var output = OperationNode.Operation.ADDITION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.ADDITION_ASSIGNMENT);
-                return new AssignmentNode(node, Expression(), output);
+                return new AssignmentNode(node, BooleanCompare(), output);
        
            }
 
@@ -386,6 +386,17 @@ public  class Parser {
 
         Node node = Expression();
         
+         if(!helper.MoreTokens())
+                return node;
+        // Check for addition and subtraction operators and construct the corresponding OperationNode.
+    
+        if(helper.Peek(0).get().getType() ==  Token.TokenType.STRINGLITERAL){
+
+            var output = OperationNode.Operation.Concatenation;
+            helper.MatchAndRemove(Token.TokenType.STRINGLITERAL);
+            System.out.println(node);
+                return new OperationNode(node,Optional.of(Expression()), output);
+        }
         
 
 
@@ -488,7 +499,8 @@ public  class Parser {
         return node.get();
     }
     private Optional<Node> ParseBottomLevel() throws AwkException {
-
+        if(!helper.MoreTokens())
+                return Optional.empty();
        
         if (helper.Peek(0).get().getType() == Token.TokenType.NUMBER) {
             // If the next token is a number, parse it as a ConstantNode.
@@ -559,12 +571,20 @@ public  class Parser {
             return Optional.of(new OperationNode(Pnode.get(), output));
 
         }
-        else if(helper.Peek(0).get().getType() == Token.TokenType.WORD) {               
-               if (helper.Peek(1).get().getType() == Token.TokenType.LEFT_PAREN){
+        else if(helper.Peek(0).get().getType() == Token.TokenType.WORD) {   
+            Boolean check = false;
+            
+                if(helper.MoreTokens()){
+                    try{
+                   check = helper.Peek(1).get().getType() == Token.TokenType.LEFT_PAREN     ;      
+                }catch(Exception e){}
+                        
+               if (check){
 
                 return Optional.of(ParseFunctionCall());
 
                }
+            }
         } 
         else if(isBuiltIn(helper.Peek(0).get().getType())) {               
                
@@ -592,6 +612,7 @@ public  class Parser {
           String name = helper.Peek(0).get().getValue().toString();
           helper.MatchAndRemove(Token.TokenType.WORD);
 
+      if(helper.MoreTokens()){
         if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_BRACKET) {
             // If the next token is a left bracket, parse the enclosed expression as an index.
             helper.MatchAndRemove(Token.TokenType.LEFT_BRACKET);
@@ -603,6 +624,7 @@ public  class Parser {
                 throw new AwkException("Need another right bracket to complete the statement");
 
             return Optional.of(new VariableReferenceNode(name, node));
+           }
         }
 
         return Optional.of(new VariableReferenceNode(name, Optional.empty()));

@@ -9,7 +9,7 @@ public class VariableReferenceNode extends StatementNode {
         this.name = name;
         this.expression = expression;
     }
-    public String getString(){
+    public String getName(){
         return name;
     }
     public Optional<Node> getExperssion(){
