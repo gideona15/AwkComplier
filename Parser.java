@@ -5,13 +5,11 @@ import java.util.Optional;
 
 public  class Parser {
     // Fields to store the token stream, a token manager helper, and the program node
-    private LinkedList<Token> TokenStream = new LinkedList<>();
     private TokenManager helper;
     private ProgramNode pro;
 
     // Constructor to initialize the parser with a token stream
     public  Parser(LinkedList<Token> input) {
-        TokenStream = input;
         helper = new TokenManager(input);
         pro = new ProgramNode();
     }
@@ -135,6 +133,26 @@ public  class Parser {
             return ParseWhile();
         } else if (helper.Peek(0).get().getType() == Token.TokenType.FOR) {
             // If it's a "for" token, parse a for loop
+
+            boolean isInArray = false;
+    
+            // Iterate through the tokens looking for  "in"
+            for (int i = 0; helper.Peek(i).isPresent() || helper.Peek(0).get().getType() == Token.TokenType.RIGHT_PAREN; i++) {
+                if (helper.Peek(0).get().getType() == Token.TokenType.IN)
+                    isInArray = true;
+    
+                try {
+                    if (helper.Peek(i + 1).get().getType() == Token.TokenType.IN)
+                        isInArray = true;
+                } catch (Exception e) {
+                    
+                break;
+                }
+               
+            }
+            if (isInArray)
+                  return ParseForIn();
+
             return ParseFor();
         } else if (helper.Peek(0).get().getType() == Token.TokenType.DELETE) {
             // If it's a "delete" token, parse a delete statement
@@ -168,6 +186,8 @@ public  class Parser {
 
        Node node = Assignment();
 
+
+
        if(node != null){
           Optional<Node> Newnode = Optional.of(node);
 
@@ -192,46 +212,46 @@ public  class Parser {
 
             var output = OperationNode.Operation.ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.EQUAL);
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.EXPONENTIATION_ASSIGNMENT){
 
             var output = OperationNode.Operation.EXPONENTIATION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.EXPONENTIATION_ASSIGNMENT);
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.MODULUS_ASSIGNMENT){
 
             var output = OperationNode.Operation.MODULUS_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.MODULUS_ASSIGNMENT);
                 
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
       
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.MULTIPLICATION_ASSIGNMENT){
 
             var output = OperationNode.Operation.MULTIPLICATION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.MULTIPLICATION_ASSIGNMENT);
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
       
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.DIVISION_ASSIGNMENT){
 
             var output = OperationNode.Operation.DIVISION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.DIVISION_ASSIGNMENT);
                
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
         
         } else if(helper.Peek(0).get().getType() ==  Token.TokenType.SUBTRACTION_ASSIGNMENT){
 
             var output = OperationNode.Operation.SUBTRACTION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.SUBTRACTION_ASSIGNMENT);
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
        
            }
            else if(helper.Peek(0).get().getType() ==  Token.TokenType.ADDITION_ASSIGNMENT){
 
             var output = OperationNode.Operation.ADDITION_ASSIGNMENT;
             helper.MatchAndRemove(Token.TokenType.ADDITION_ASSIGNMENT);
-                return new AssignmentNode(node, BooleanCompare(), output);
+                return new AssignmentNode(node, Assignment(), output);
        
            }
 
@@ -247,7 +267,7 @@ public  class Parser {
                 return node;
     
         if (helper.Peek(0).get().getType() == Token.TokenType.CONDITIONAL_QUESTION) {
-            var output = OperationNode.Operation.CONDITIONAL_QUESTION;
+           // var output = OperationNode.Operation.CONDITIONAL_QUESTION;
             helper.MatchAndRemove(Token.TokenType.CONDITIONAL_QUESTION);
     
             // It constructs a TernaryNode and returns it.
@@ -573,7 +593,6 @@ public  class Parser {
         }
         else if(helper.Peek(0).get().getType() == Token.TokenType.WORD) {   
             Boolean check = false;
-            
                 if(helper.MoreTokens()){
                     try{
                    check = helper.Peek(1).get().getType() == Token.TokenType.LEFT_PAREN     ;      
@@ -912,7 +931,7 @@ public  class Parser {
     
             // Check if there's no token left to parse
             if (!helper.Peek(0).isPresent()) {
-                return new IfNode(condition.get(), block);
+                return new IfNode(condition.get(), block.getSnode());
             }
     
             // Check if there's an "ELSE" token
@@ -926,7 +945,7 @@ public  class Parser {
                     // Parse an "if" node recursively (for "else if" condition)
                     var NodeIf = ParseIf();
     
-                    return new IfNode(condition.get(), block, NodeIf);
+                    return new IfNode(condition.get(), block.getSnode(), NodeIf);
                 }
     
                 // Parse a block of statements for the "else" branch
@@ -937,10 +956,10 @@ public  class Parser {
                     throw new AwkException("Not a valid else statement, needs a statement");
                 }
     
-                return new IfNode(condition.get(), block, elseBlock);
+                return new IfNode(condition.get(), block.getSnode(), elseBlock);
             } else {
                 // Return an IfNode with just the "if" condition and block
-                return new IfNode(condition.get(), block);
+                return new IfNode(condition.get(), block.getSnode());
             }
         } else {
             // Throw an exception if the left and right parentheses are not found
@@ -952,7 +971,7 @@ public  class Parser {
               helper.MatchAndRemove(Token.TokenType.DO);
 
               Optional<Node> condition;
-              Node FirstRun;
+              BlockNode FirstRun;
 
                    FirstRun = ParseBlock();
                        if(FirstRun == null)
@@ -979,7 +998,7 @@ public  class Parser {
             }else
                throw new AwkException("This statement needs while token");  
 
-        return new DoWhileNode(condition.get(), FirstRun);
+        return new DoWhileNode(condition.get(), FirstRun.getSnode());
     }
     private WhileNode ParseWhile() throws AwkException{
         helper.MatchAndRemove(Token.TokenType.WHILE); // Match and remove the "WHILE" token
@@ -1007,7 +1026,7 @@ public  class Parser {
             }
         
             // Create and return a WhileNode with the condition and block
-            return new WhileNode(condition.get(), block);
+            return new WhileNode(condition.get(), block.getSnode());
         } else {
             // Throw an exception if the left and right parentheses are not found
             throw new AwkException("This statement needs left and right parentheses");
@@ -1027,33 +1046,6 @@ public  class Parser {
             // Consume the left parenthesis
             helper.MatchAndRemove(Token.TokenType.LEFT_PAREN);
     
-            boolean isInArray = false;
-    
-            // Iterate through the tokens looking for  "in"
-            for (int i = 0; helper.Peek(i).isPresent(); i++) {
-                if (helper.Peek(0).get().getType() == Token.TokenType.IN)
-                    isInArray = true;
-    
-                try {
-                    if (helper.Peek(i + 1).get().getType() == Token.TokenType.IN)
-                        isInArray = true;
-                } catch (Exception e) {
-                    
-                break;
-                }
-    
-               
-            }
-    
-            // If "in" condition is met, parse an operation for the ForNode
-            if (isInArray) {
-                var In = ParseOperation();
-                if (In.isPresent()) {
-                    return new ForNode(In.get());
-                } else {
-                    throw new AwkException("Incorrect for in");
-                }
-            }
     
             // Parse an assignment operation
             var Assignment = ParseOperation();
@@ -1096,7 +1088,7 @@ public  class Parser {
             }
     
             // Create and return a ForNode with Assignment, Condition, Iteration, and the optional block
-            return new ForNode(Assignment, Condition, Iteration, Optional.of(block));
+            return new ForNode(Assignment, Condition, Iteration, ( block.getSnode()));
         } else {
             // Throw an exception if the left and right parentheses are not found
             throw new AwkException("This for statement needs left and right parentheses");
@@ -1106,8 +1098,75 @@ public  class Parser {
     helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
     return new ContinueNode(); // Create and return a new ContinueNode
 }
+    private ForInNode ParseForIn() throws AwkException {
+        // Match and remove the "FOR" token
+        helper.MatchAndRemove(Token.TokenType.FOR);
     
-private ReturnNode ParseReturn() throws AwkException {
+        // Check if the next token is a left parenthesis
+        if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_PAREN) { 
+            // Consume the left parenthesis
+            helper.MatchAndRemove(Token.TokenType.LEFT_PAREN);
+    
+            boolean isInArray = false;
+    
+            // Iterate through the tokens looking for  "in"
+            for (int i = 0; helper.Peek(i).isPresent(); i++) {
+                if (helper.Peek(0).get().getType() == Token.TokenType.IN)
+                    isInArray = true;
+    
+                try {
+                    if (helper.Peek(i + 1).get().getType() == Token.TokenType.IN)
+                        isInArray = true;
+                } catch (Exception e) {
+                    
+                break;
+                }
+    
+               
+            }
+    
+            // If "in" condition is met, parse an operation for the ForNode
+            if (isInArray) {
+                var value = ParseOperation();
+                    if (!value.isPresent()) 
+                      throw new AwkException("Incorrect for in");
+
+                     if (helper.Peek(0).get().getType() != Token.TokenType.CONDITIONAL_COLON) 
+                       throw new AwkException("Needs a colon");
+                     else 
+                       // Consume the separator
+                            helper.MatchAndRemove(Token.TokenType.CONDITIONAL_COLON);
+            
+                var InArray = ParseOperation();
+                if (!InArray.isPresent()) 
+                      throw new AwkException("Incorrect for in");
+                    
+                   if (helper.Peek(0).get().getType() != Token.TokenType.RIGHT_PAREN) {
+                      throw new AwkException("Needs a right parenthesis");
+                    } else {
+                      // Consume the right parenthesis
+                     helper.MatchAndRemove(Token.TokenType.RIGHT_PAREN);
+                   }
+
+
+                 // Parse a block of statements
+                var block = ParseBlock();
+    
+                   // Check if the block is null (not a valid "if" statement)
+                 if (block == null) 
+                throw new AwkException("Not a valid If statement, needs a statement");
+            
+    
+            // Create and return a ForNode with Assignment, Condition, Iteration, and the optional block
+              return new ForInNode(value.get(),InArray.get(), block.getSnode());
+                
+            }else
+            // Throw an exception if the left and right parentheses are not found
+            throw new AwkException("This for statement needs left and right parentheses");
+        }
+        return null;
+    } 
+    private ReturnNode ParseReturn() throws AwkException {
     helper.MatchAndRemove(Token.TokenType.RETURN); // Match and remove the "RETURN" token
 
     // Parse an operation for the return value

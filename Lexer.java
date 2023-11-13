@@ -177,16 +177,14 @@ private Token HandlePattern() {
     while (helper.Peek(0) != '`') {
 
         // Check if there are no more characters to process
-        if (helper.Peek(1) == null) {
+        if (helper.Peek(1) == null || helper.Peek(1) == '\n'||helper.Peek(1) == '}') {
             word += helper.GetChar();
-            System.out.println(word); // Optional: Print the pattern
             break;
         } else {
             word += helper.GetChar();
         }
     }
 
-    helper.Swallow(0); // Consume the closing backtick
     return new Token(Token.TokenType.Pattern, word, lineNumber, position++);
 }
 

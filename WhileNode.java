@@ -1,9 +1,11 @@
+import java.util.LinkedList;
+
 public class WhileNode extends StatementNode {
     private Node condition;
-    private Node statement;
+    private LinkedList<StatementNode> statement;
 
     // Constructor
-    public WhileNode(Node condition, Node statement) {
+    public WhileNode(Node condition, LinkedList<StatementNode> statement) {
         this.condition = condition;
         this.statement = statement;
     }
@@ -13,7 +15,7 @@ public class WhileNode extends StatementNode {
         return condition;
     }
 
-    public Node getStatement() {
+    public LinkedList<StatementNode> getStatement() {
         return statement;
     }
 

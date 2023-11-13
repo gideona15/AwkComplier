@@ -1,9 +1,9 @@
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -472,7 +472,7 @@ public void TestyyParseOperation3() throws AwkException {
 
       // Compare the parsed node to the expected syntax tree structure.
       assertEquals(new IfNode(new OperationNode(new VariableReferenceNode("n", Optional.empty()), Optional.of(new ConstantNode(1)), OperationNode.Operation.LOGICAL_EQUAL), 
-      block).toString(), node.toString());
+      block.getSnode()).toString(), node.toString());
   }
     @Test
   public void TestParseWhile() throws AwkException {
@@ -492,7 +492,7 @@ public void TestyyParseOperation3() throws AwkException {
 
       // Compare the parsed node to the expected syntax tree structure.
       assertEquals(new WhileNode(new OperationNode(new ConstantNode(3), Optional.of(new ConstantNode(3)), OperationNode.Operation.LOGICAL_EQUAL), 
-      block).toString(), node.toString());
+      block.getSnode()).toString(), node.toString());
  
  
  
@@ -516,7 +516,7 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(new ForNode(Optional.of(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(1), OperationNode.Operation.ASSIGNMENT)),
        Optional.of(new OperationNode(new VariableReferenceNode("a", Optional.empty()), Optional.of(new ConstantNode(3)), OperationNode.Operation.GREATER_THAN)),
        Optional.of(new OperationNode(new VariableReferenceNode("a", Optional.empty()) , OperationNode.Operation.POST_INCREMENT)), 
-       Optional.of(block)).toString(), node.toString());
+       (block.getSnode())).toString(), node.toString());
   }
 
 
@@ -565,7 +565,7 @@ public void TestParseBuiltIn2() throws AwkException {
 @Test
 public void TestInterpreter() throws AwkException, IOException {
     // Define the file path and create a lexer, tokenize the input, and parse the program
-    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt"); // needs do be "print helloo sub (t)"
     var lexer = new Lexer(" print helloo sub (t)");
     var tokens = lexer.Lex();
     var parse = new Parser(tokens);
@@ -577,25 +577,7 @@ public void TestInterpreter() throws AwkException, IOException {
 }
 
 //Interpreter 2
-@Test
-public void TestgetInterpreterDataType() throws AwkException, IOException {
-    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
-    var lexer = new Lexer(" a = 6 + 5");
-    var tokens = lexer.Lex();
-    var parse = new Parser(tokens);
-    var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
-
-    Interpreter interpret = new Interpreter(parsed, myPath);
-
-    var fin = interpret.getInterpreterDataType(parsed.getOther().get(0));
-
-    boolean same = parsed.getOther().get(0) instanceof AssignmentNode;
-    assertEquals(true, same);
-
-    assertEquals("11.0", interpret.globalVariables.get("a").toString());
-}
 @Test
 public void TestgetInterpreterDataType2() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
@@ -604,7 +586,7 @@ public void TestgetInterpreterDataType2() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
+    // Create an interpreter
 
     Interpreter interpret = new Interpreter(parsed, myPath);
 
@@ -623,7 +605,7 @@ public void TestgetInterpreterDataType3() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
+    // Create an interpreter 
 
     Interpreter interpret = new Interpreter(parsed, myPath);
     for( Node lines : parsed.getOther()){
@@ -642,7 +624,7 @@ public void TestgetInterpreterDataType4() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
+    // Create an interpreter
 
     Interpreter interpret = new Interpreter(parsed, myPath);
      for( Node lines : parsed.getOther()){
@@ -661,7 +643,7 @@ public void TestgetInterpreterDataType5() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
+    // Create an interpreter 
 
     Interpreter interpret = new Interpreter(parsed, myPath);
      for( Node lines : parsed.getOther()){
@@ -680,7 +662,7 @@ public void TestgetInterpreterDataType6() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
+    // Create an interpreter 
 
     Interpreter interpret = new Interpreter(parsed, myPath);
      for( Node lines : parsed.getOther()){
@@ -699,7 +681,6 @@ public void TestgetInterpreterDataType7() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
 
     Interpreter interpret = new Interpreter(parsed, myPath);
      for( Node lines : parsed.getOther()){
@@ -719,7 +700,6 @@ public void TestgetInterpreterDataType9() throws AwkException, IOException {
     var parse = new Parser(tokens);
     var parsed = parse.program();
 
-    // Create an interpreter and evaluate the global variable "NF"
 
     Interpreter interpret = new Interpreter(parsed, myPath);
      for( Node lines : parsed.getOther()){
@@ -729,6 +709,83 @@ public void TestgetInterpreterDataType9() throws AwkException, IOException {
 }
   
     assertEquals(new InterpreterDataType("hehe").toString(), interpret.getGlobalVariable("a").toString());
+}
+
+@Test
+public void TestgetInterpreterDataType10() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer(" { a = \"hey\" ~ `hey }");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+     for( Node lines : parsed.getOther()){
+        BlockNode block = (BlockNode)lines;
+         for( Node line : block.getSnode())
+            interpret.getInterpreterDataType(line);
+     }
+     //assertEquals(null, null;
+    assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("a").toString());
+}
+
+
+
+//Interpreter 3
+@Test
+public void TestgetInterpreterStatements() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer(" { n = 1 \n a = 20 \n if(n == 1) { a =  100 / a  } }");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+     for( Node lines : parsed.getOther()){
+        BlockNode block = (BlockNode)lines;
+         for( StatementNode line : block.getSnode())
+            interpret.ProcessStatement(new HashMap<String, InterpreterDataType>(), line);
+     }
+     //assertEquals(null, null;
+    assertEquals(new InterpreterDataType("5.0").toString(), interpret.getGlobalVariable("a").toString());
+}
+@Test
+public void TestgetInterpreterStatements2() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer(" { n = 1 \n a = 20 \n if(n == 2) { a =  100 / a  } else { a = 2}}");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+     for( Node lines : parsed.getOther()){
+        BlockNode block = (BlockNode)lines;
+         for( StatementNode line : block.getSnode())
+            interpret.ProcessStatement(new HashMap<String, InterpreterDataType>(), line);
+     }
+     
+     //assertEquals(null, null;
+    assertEquals(new InterpreterDataType("2").toString(), interpret.getGlobalVariable("a").toString());
+}
+
+@Test
+public void TestgetInterpreterStatements3() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer(" { n = 1 \n a = 20 \n while(n < 2) { a =  5 + n \n n++} }");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+     for( Node lines : parsed.getOther()){
+        BlockNode block = (BlockNode)lines;
+         for( StatementNode line : block.getSnode())
+            interpret.ProcessStatement(new HashMap<String, InterpreterDataType>(), line);
+     }
+     
+     //assertEquals(null, null;
+    assertEquals(new InterpreterDataType("6.0").toString(), interpret.getGlobalVariable("a").toString());
 }
 
 }

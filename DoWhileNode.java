@@ -1,9 +1,11 @@
+import java.util.LinkedList;
+
 public class DoWhileNode extends StatementNode {
 private Node condition;
-    private Node statement;
+    private LinkedList<StatementNode> statement;
 
     // Constructor
-    public DoWhileNode(Node condition, Node statement) {
+    public DoWhileNode(Node condition, LinkedList<StatementNode>  statement) {
         this.condition = condition;
         this.statement = statement;
     }
@@ -13,7 +15,7 @@ private Node condition;
         return condition;
     }
 
-    public Node getStatement() {
+    public LinkedList<StatementNode>  getStatement() {
         return statement;
     }
 

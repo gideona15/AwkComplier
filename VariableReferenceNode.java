@@ -15,6 +15,9 @@ public class VariableReferenceNode extends StatementNode {
     public Optional<Node> getExperssion(){
         return expression;
     }
+    public String getNameAndExperssion(){
+        return name + "["+expression+"]";
+    }
 
     @Override
     public String toString() {

@@ -1,3 +1,4 @@
+import java.util.LinkedList;
 import java.util.Optional;
 
 public class ForNode extends StatementNode {
@@ -5,13 +6,13 @@ public class ForNode extends StatementNode {
     private Optional<Node> Itialization;
     private Optional<Node> Condition;
     private Optional<Node> Iteration;
-    private Optional<Node> Statement;
+    private LinkedList<StatementNode> Statement;
     private Node IterationArray;
     
      
     
     // Constructor
-    public ForNode(Optional<Node> Itialization, Optional<Node> Condition, Optional<Node> Iteration, Optional<Node> Statement) {
+    public ForNode(Optional<Node> Itialization, Optional<Node> Condition, Optional<Node> Iteration, LinkedList<StatementNode> Statement) {
         this.Itialization = Itialization;
         this.Condition = Condition;
         this.Iteration = Iteration;
@@ -24,7 +25,7 @@ public class ForNode extends StatementNode {
         }
 
     // Getter methods
-    public Optional<Node> getAssignment() {
+    public Optional<Node> getItialization() {
         return Itialization;
     }
 
@@ -36,7 +37,7 @@ public class ForNode extends StatementNode {
         return Iteration;
     }
 
-    public Optional<Node> getStatement() {
+    public LinkedList<StatementNode> getStatement() {
         return Statement;
     }
 
@@ -51,7 +52,7 @@ public class ForNode extends StatementNode {
         if(this.IterationArray == null)
             return "ForNode{" + " Itialization= " + Itialization + ", Condition= " + Condition + ", Iteration= " + Iteration + ", Statement= " + Statement + '}';
         else
-             return "ForInNode{" + ", IterationArray=" + IterationArray + '}';
+             return "ForInNode{" + ", IterationArray=" + IterationArray + '}' + "Statements= "+ Statement;
     
     }
 }

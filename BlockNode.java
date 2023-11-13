@@ -33,8 +33,8 @@ public class BlockNode extends StatementNode {
     @Override
     public String toString() {
         if(condition != null)
-           return "BlockNode{" + "Condition= " + condition + "StatementNodes= " + snode + '}';
+           return "BlockNode {" + "Condition= " + condition + "StatementNodes= " + snode + '}';
         else 
-           return "BlockNode{" +  "StatementNodes= " + snode + '}';
+           return "BlockNode {" +  "StatementNodes= " + snode + '}';
     }
 }
