@@ -55,9 +55,6 @@ public class Awk {
                     interpret.ProcessStatement(interpret.globalVariables, line);
          }
 
-         System.out.println(interpret.getGlobalVariable("a"));
-
-
 
 
     }

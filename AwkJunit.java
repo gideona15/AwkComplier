@@ -148,13 +148,13 @@ public void TestParser() throws AwkException {
         // Create a parser and initialize program and other data structures
         var parse = new Parser(tokens);
         var program = new ProgramNode();
-        var par = new LinkedList<Token>();
+        var par = new LinkedList<Node>();
         var block = new LinkedList<StatementNode>();
     
         // Create tokens for function parameters
-        par.add(new Token(Token.TokenType.WORD, "f", 0, 4));
-        par.add(new Token(Token.TokenType.NUMBER, "7", 0, 6));
-        par.add(new Token(Token.TokenType.NUMBER, "9", 0, 8));
+        par.add(new VariableReferenceNode("f", Optional.empty()));
+        par.add(new ConstantNode(7));
+        par.add(new ConstantNode(9));
     
         // Create a placeholder for the function body (block)
         block.add(new BlockNode());

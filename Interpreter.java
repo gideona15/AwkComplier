@@ -126,6 +126,48 @@ public class Interpreter {
         return functionDefinitions.get(name);
     }
    
+    private void InterpretProgram(ProgramNode program) throws AwkException{
+
+        for(BlockNode block : program.getBegin()){
+           InterpretBlock(block);
+           lineManagement.splitAndAssign();
+
+        }
+        for(Node block : program.getOther()){
+        //   InterpretBlock(block);
+           lineManagement.splitAndAssign();
+
+        }
+        for(BlockNode block : program.getEnd()){
+           InterpretBlock(block);
+           lineManagement.splitAndAssign();
+
+        }
+
+    }
+
+
+    private void InterpretBlock(BlockNode block) throws AwkException {
+        if(block == null)
+            throw new AwkException("block is null");
+
+        if(block.getCondition().isPresent()){
+           var condition = Boolean.parseBoolean(getInterpreterDataType(block.getCondition().get()).getValue());
+               if(condition)
+                  for(StatementNode statement : block.getSnode())
+                       ProcessStatement(new HashMap<>(),statement);
+
+        }else
+            for(StatementNode statement : block.getSnode())
+                ProcessStatement(new HashMap<>(),statement);
+           
+            
+           
+
+        
+
+
+    }
     public ReturnType ProcessStatement(HashMap<String, InterpreterDataType> locals, StatementNode statement) throws AwkException {
         var node = statement;
     
@@ -418,10 +460,29 @@ return new ReturnType(ReturnType.Type.NONE);
         // Return null if the node type is not recognized
         return null;
     }  
-    private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables){
+    private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables) throws AwkException{
+
+        FunctionCallNode userCallFuction = fNode;
+
+       if(functionDefinitions.containsKey(userCallFuction.getFunctionName())){
+
+            FunctionDefinitionNode function = functionDefinitions.get(userCallFuction.getFunctionName());
+                if(function.getParameters().size() != userCallFuction.getParameters().size())
+                   throw new AwkException("The inputed function name \"" +userCallFuction.getFunctionName() +"\" had parameter size of " +userCallFuction.getParameters().size()+ " Compared to the expected " + function.getParameters().size());
+
+                HashMap<String, InterpreterDataType> map = new HashMap<String, InterpreterDataType>();
+
+                    for(Node para : function.getParameters())
+                           getInterpreterDataType(para);
+
+                        if(function.getName() == null);
+     
+       }
+
 
         return "";
     }
+
     private InterpreterDataType getOperationalIDT(Node left, Optional<Node> right, OperationNode.Operation op, HashMap<String, InterpreterDataType> localVariables) throws AwkException{
      
                     

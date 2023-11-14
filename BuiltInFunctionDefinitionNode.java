@@ -7,7 +7,7 @@ public class BuiltInFunctionDefinitionNode extends FunctionDefinitionNode {
     private boolean isVariadic;
 
     public BuiltInFunctionDefinitionNode(String name, Function<HashMap<String, InterpreterDataType>, String> execute, boolean isVariadic) {
-        super(name, new LinkedList<Token>(), new LinkedList<StatementNode>());
+        super(name, new LinkedList<Node>(), new LinkedList<StatementNode>());
         this.execute = execute;
         this.isVariadic = isVariadic;
     }

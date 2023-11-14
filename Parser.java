@@ -46,7 +46,7 @@ public  class Parser {
             } else
                 throw new AwkException("This function needs a name");
 
-            LinkedList<Token> pholder = ParseParameters();
+            LinkedList<Node> pholder = ParseNodeParameters();
             LinkedList<StatementNode> sholder = new LinkedList<StatementNode>();
 
             BlockNode node = ParseBlock();
@@ -122,7 +122,6 @@ public  class Parser {
         // Return the BlockNode representing the parsed block
         return node;
     }
-    
     protected StatementNode ParseStatement() throws AwkException {
         // Check the type of the next token
         if (helper.Peek(0).get().getType() == Token.TokenType.IF) {
@@ -182,10 +181,9 @@ public  class Parser {
     }
     
     // Parse an operation
-    public   Optional<Node> ParseOperation() throws AwkException {
+    public Optional<Node> ParseOperation() throws AwkException {
 
        Node node = Assignment();
-
 
 
        if(node != null){
