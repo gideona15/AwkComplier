@@ -131,45 +131,52 @@ public class Interpreter {
         return functionDefinitions.get(name);
     }
    
-    public void InterpretProgram(ProgramNode program) throws AwkException{
-
-        for(BlockNode block : program.getBegin()){
-           InterpretBlock(block);
-           lineManagement.splitAndAssign();
-
+    public void InterpretProgram(ProgramNode program) throws AwkException {
+        // Process 'BEGIN' blocks
+        for (BlockNode block : program.getBegin()) {
+            InterpretBlock(block);
+            lineManagement.splitAndAssign();
         }
-        for(Node block : program.getOther()){
-
-          InterpretBlock((BlockNode)block);
-           lineManagement.splitAndAssign();
-
+    
+        // Process other blocks
+        for (Node block : program.getOther()) {
+            InterpretBlock((BlockNode) block);
+            lineManagement.splitAndAssign();
         }
-        for(BlockNode block : program.getEnd()){
-           InterpretBlock(block);
-           lineManagement.splitAndAssign();
-
+    
+        // Process 'END' blocks
+        for (BlockNode block : program.getEnd()) {
+            InterpretBlock(block);
+            lineManagement.splitAndAssign();
         }
-
     }
+    
     private void InterpretBlock(BlockNode block) throws AwkException {
-        if(block == null)
+        // Check if the block is null
+        if (block == null) {
             throw new AwkException("block is null");
-
-        if(block.getCondition().isPresent()){
-         
+        }
+    
+        // Check if the block has a condition
+        if (block.getCondition().isPresent()) {
+            // Evaluate the condition
             var condition = Boolean.parseBoolean(getInterpreterDataType(block.getCondition().get(), globalVariables).getValue());
-
-           if(condition)
-                  for(StatementNode statement : block.getSnode())
-                    ProcessStatement(new HashMap<>(),statement);
-
-        }else
-        
-            for(StatementNode statement : block.getSnode())
-                    ProcessStatement(new HashMap<>(),statement);
-           
-            
+    
+            // If the condition is true, process the statements in the block
+            if (condition) {
+                for (StatementNode statement : block.getSnode()) {
+                    ProcessStatement(new HashMap<>(), statement);
+                }
+            }
+    
+        } else {
+            // If there is no condition, process all statements in the block
+            for (StatementNode statement : block.getSnode()) {
+                ProcessStatement(new HashMap<>(), statement);
+            }
+        }
     }
+    
     private ReturnType InterpretListOfStatements(LinkedList<StatementNode> statements, HashMap<String, InterpreterDataType> locals) throws AwkException {
 
         ReturnType result = new ReturnType(ReturnType.Type.NONE);
