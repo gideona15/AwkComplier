@@ -1,6 +1,6 @@
-public class ConstantNode extends Node  {
+public class ConstantNode extends StatementNode  {
 
-      public static final String getValuObject = null;
+    public static final String getValuObject = null;
     private Object value;
 
     public ConstantNode(Object input){

@@ -3,11 +3,10 @@ import java.util.Optional;
 
 public class BlockNode extends StatementNode {
     private LinkedList<StatementNode> snode = new LinkedList<>();
-    private Optional<Node> condition ;
+    private Optional<Node> condition = Optional.empty();
 
     // Constructor
     public BlockNode() {
-        // You can initialize any default values or perform other setup here if needed.
     }
 
     // Setter methods

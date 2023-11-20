@@ -27,6 +27,9 @@ public class FunctionDefinitionNode extends Node {
     public LinkedList<Node> getParameters(){
         return Parameters;
     }
+    public void setParameters(LinkedList<Node> input){
+         Parameters = input;
+    }
     public LinkedList<StatementNode> getStatementNodes(){
         return StateNode;
     }

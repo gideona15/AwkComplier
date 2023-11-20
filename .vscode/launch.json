@@ -9,6 +9,13 @@
             "name": "Awk",
             "request": "launch",
             "mainClass": "Awk",
+            "projectName": "AwkComplier-2_aaf04669"
+        },
+        {
+            "type": "java",
+            "name": "Awk",
+            "request": "launch",
+            "mainClass": "Awk",
             "projectName": "AwkComplier-1_aaf04668"
         },
         {

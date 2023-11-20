@@ -29,14 +29,16 @@ public class TokenManager {
     // Remove and accept separators from the TokenStream
     public Boolean AcceptSeperators() {
         Boolean hear = false;
-        for (int i = 0; i < TokenStream.size(); i++) {
-            
-            if (TokenStream.get(i).getType() == Token.TokenType.SEPARATOR) {
-                TokenStream.remove(i);
+
+            if (TokenStream.getFirst().getType() == Token.TokenType.SEPARATOR) {
+               // TokenStream.remove(i);
+                 MatchAndRemove(Token.TokenType.SEPARATOR);
+                    if(TokenStream.isEmpty())
+                        return false;
                 hear = true;    
-            }
+            }else
+               hear = false;
             
-        }
         return hear;
     }
 

@@ -71,6 +71,15 @@ public  class Parser {
             helper.MatchAndRemove(Token.TokenType.END);
             BlockNode node = ParseBlock();
             pro.getEnd().add(node);
+        } else if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_PAREN) {
+                var Pnode = ParseOperation();
+                var Bnode = ParseBlock();
+
+                if (Pnode.isPresent())
+                    Bnode.setCondition(Pnode);
+                if (Bnode != null)
+                    pro.getOther().add(Bnode);
+
         } else {
 
             var Pnode = ParseOperation();
@@ -89,32 +98,40 @@ public  class Parser {
         // Check if there are tokens left to parse
         if (!helper.Peek(0).isPresent())
             return null;
-    
+        
         // Create a new BlockNode to represent a block of statements
         BlockNode node = new BlockNode();
     
-        // Check if the next token is a left curly bracket, indicating the start of a block
+        // Check if the next token is a left cnurly bracket, indicating the start of a block
         if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_CURLY_BRACKETS) {
             // Consume the left curly bracket
             helper.MatchAndRemove(Token.TokenType.LEFT_CURLY_BRACKETS);
+                while (helper.AcceptSeperators());
+
             // Parse statements within the block until a right curly bracket is encountered
             while (helper.Peek(0).get().getType() != Token.TokenType.RIGHT_CURLY_BRACKETS) {
                 // Parse a statement within the block
                 var Pnode = ParseStatement();
+                while (helper.AcceptSeperators());
+
                 if (Pnode == null)
                     break; // Break the loop if no statement can be parsed
                 else
                     node.getSnode().add(Pnode); // Add the parsed statement to the block
             }
-    
             // Check if a right curly bracket is found to indicate the end of the block
-            if (helper.Peek(0).get().getType() == Token.TokenType.RIGHT_CURLY_BRACKETS)
+            if (helper.Peek(0).get().getType() == Token.TokenType.RIGHT_CURLY_BRACKETS){
                 helper.MatchAndRemove(Token.TokenType.RIGHT_CURLY_BRACKETS);
+                    while (helper.AcceptSeperators());
+
+            }
             else
                 throw new AwkException("Block needs a right curly bracket"); // Throw an exception if the right curly bracket is missing
         } else {
             // If there is no left curly bracket, parse a single statement and add it to the block
             var Pnode = ParseStatement();
+                while (helper.AcceptSeperators());
+
             if (Pnode != null)
                 node.getSnode().add(Pnode);
         }
@@ -184,7 +201,6 @@ public  class Parser {
     public Optional<Node> ParseOperation() throws AwkException {
 
        Node node = Assignment();
-
 
        if(node != null){
           Optional<Node> Newnode = Optional.of(node);
@@ -553,7 +569,10 @@ public  class Parser {
             var output = OperationNode.Operation.SUBTRACTION;
             helper.MatchAndRemove(Token.TokenType.SUBTRACTION);
             var node = ParseOperation();
-            return Optional.of(new OperationNode(node.get(), output));
+            ConstantNode can = (ConstantNode) node.get();
+
+            new ConstantNode("-"+node.get());
+            return Optional.of(new OperationNode(new ConstantNode("-"+can.getValuObject()), output));
 
         } else if (helper.Peek(0).get().getType() == Token.TokenType.LOGICAL_NOT) {
             // If the next token is a logical NOT symbol, parse it as a logical NOT operation.
@@ -697,13 +716,17 @@ public  class Parser {
     private LinkedList<Node> ParseNodeParametersNoParen() throws AwkException {
 
         LinkedList<Node> parameters = new LinkedList<>();
-           
-                 var Pnode = ParseOperation();
+                 
+                while (helper.Peek(0).get().getType() != Token.TokenType.SEPARATOR) {
+               
+                var Pnode = ParseOperation();
                     if(Pnode.isPresent()){
                     parameters.add(Pnode.get());
-                    }
-                    else
-                      throw new AwkException("incorrect statement!");
+                   }
+                   else
+                      break;
+            }
+            helper.MatchAndRemove(Token.TokenType.SEPARATOR);
                 
 
             return parameters;
@@ -1093,8 +1116,8 @@ public  class Parser {
         }
     } 
     private ContinueNode ParseContine() throws AwkException {
-    helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
-    return new ContinueNode(); // Create and return a new ContinueNode
+          helper.MatchAndRemove(Token.TokenType.CONTINUE); // Match and remove the "CONTINUE" token
+       return new ContinueNode(); // Create and return a new ContinueNode
 }
     private ForInNode ParseForIn() throws AwkException {
         // Match and remove the "FOR" token

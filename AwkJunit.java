@@ -566,7 +566,7 @@ public void TestParseBuiltIn2() throws AwkException {
 public void TestInterpreter() throws AwkException, IOException {
     // Define the file path and create a lexer, tokenize the input, and parse the program
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt"); // needs do be "print helloo sub (t)"
-    var lexer = new Lexer(" print helloo sub (t)");
+    var lexer = new Lexer(" {print helloo sub (t)}");
     var tokens = lexer.Lex();
     var parse = new Parser(tokens);
     var parsed = parse.program();
@@ -581,7 +581,7 @@ public void TestInterpreter() throws AwkException, IOException {
 @Test
 public void TestgetInterpreterDataType2() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
-    var lexer = new Lexer("5");
+    var lexer = new Lexer("{5}");
     var tokens = lexer.Lex();
     var parse = new Parser(tokens);
     var parsed = parse.program();
@@ -589,13 +589,16 @@ public void TestgetInterpreterDataType2() throws AwkException, IOException {
     // Create an interpreter
 
     Interpreter interpret = new Interpreter(parsed, myPath);
-
-    var fin = interpret.getInterpreterDataType(parsed.getOther().get(0));
-
-    boolean same = parsed.getOther().get(0) instanceof ConstantNode;
+     Node line =null;
+    for( Node lines : parsed.getOther()){
+        BlockNode block = (BlockNode)lines;
+    
+          line = block.getSnode().get(0);
+    }
+    boolean same = parsed.getOther().get(0) instanceof BlockNode;
     assertEquals(true, same);
 
-    assertEquals(new InterpreterDataType("5").toString(), fin.toString());
+    assertEquals(new InterpreterDataType("5").toString(), interpret.getInterpreterDataType(line, null).toString());
 }
 @Test
 public void TestgetInterpreterDataType3() throws AwkException, IOException {
@@ -606,12 +609,11 @@ public void TestgetInterpreterDataType3() throws AwkException, IOException {
     var parsed = parse.program();
 
     // Create an interpreter 
-
     Interpreter interpret = new Interpreter(parsed, myPath);
     for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
 
     assertEquals(new InterpreterDataType("2.0").toString(), interpret.getGlobalVariable("n").toString());
@@ -630,7 +632,7 @@ public void TestgetInterpreterDataType4() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
   
     assertEquals(new InterpreterDataType("3.0").toString(), interpret.getGlobalVariable("a").toString());
@@ -649,7 +651,7 @@ public void TestgetInterpreterDataType5() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
   
     assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("a").toString());
@@ -668,7 +670,7 @@ public void TestgetInterpreterDataType6() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
   
     assertEquals(new InterpreterDataType("false").toString(), interpret.getGlobalVariable("a").toString());
@@ -686,7 +688,7 @@ public void TestgetInterpreterDataType7() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
   
     assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("a").toString());
@@ -705,7 +707,7 @@ public void TestgetInterpreterDataType9() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
 }
   
     assertEquals(new InterpreterDataType("hehe").toString(), interpret.getGlobalVariable("a").toString());
@@ -724,7 +726,7 @@ public void TestgetInterpreterDataType10() throws AwkException, IOException {
      for( Node lines : parsed.getOther()){
         BlockNode block = (BlockNode)lines;
          for( Node line : block.getSnode())
-            interpret.getInterpreterDataType(line);
+            interpret.getInterpreterDataType(line, null);
      }
      //assertEquals(null, null;
     assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("a").toString());
@@ -788,4 +790,192 @@ public void TestgetInterpreterStatements3() throws AwkException, IOException {
     assertEquals(new InterpreterDataType("6.0").toString(), interpret.getGlobalVariable("a").toString());
 }
 
+
+
+//Final Tests
+
+@Test
+public void TestFuntonCalls() throws AwkException, IOException {
+    // Define the path to a file
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+
+    // Create a lexer with a sample script
+    var lexer = new Lexer(" function multi(left, right) { newNumber = left * right } \n Begin{  numb = 5 \n multi( 10 - 5, numb) }");
+// function multi(left, right) {
+// 	newNumber = left * right
+// }
+
+// Begin{
+// numb = 5
+// multi( 10 - 5, numb)
+// }
+
+
+    // Tokenize the script
+    var tokens = lexer.Lex();
+
+    // Create a parser and parse the tokens into an Abstract Syntax Tree (AST)
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    // Create an interpreter and interpret the parsed AST
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    interpret.InterpretProgram(parsed);
+
+    // Assert that the value of the global variable "NewNode" is "25.0"
+    assertEquals("25.0", interpret.getGlobalVariable("newNumber").toString());
+}
+
+
+
+@Test
+public void TestConditionalBlocks() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer("Begin{ left = 50 right = 50 SameNUmber = left == right} (SameNUmber){ numb = 100}");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    interpret.InterpretProgram(parsed);
+     
+     //assertEquals(null, null;
+    assertEquals(new InterpreterDataType("100").toString(), interpret.getGlobalVariable("numb").toString());
+}
+
+@Test
+public void TestMathAndLogic() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer("Begin{\n" +
+    "StudentOne = 100\n" +
+    "StudentTwo = 30\n" +
+    "\n" +
+    "Together = StudentOne + StudentTwo\n" +
+    "\n" +
+    "Score = Together > 50\n" +
+    "\n" +
+    "if (Score) {\n" +
+    "    print \"The Students did get more than 50 points together\"\n" +
+    "} else {\n" +
+    "    print \"The Students did not get more than 50 points together\"\n" +
+    "} }");
+
+    // Begin{
+    //     StudentOne = 100
+    //     StudentTwo = 30
+        
+    //     Together = StudentOne + StudentTwo
+        
+    //     Score = Together > 50
+        
+    //     if (Score){
+    //         print "The Students did get more then 50 points together"
+    //     }
+        
+    //     else {
+    //         print "The Students did not get more then 50 points together"
+    //     }
+    // }
+
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    interpret.InterpretProgram(parsed);
+     
+     //False if The Students did not get more then 50 points together
+     //True if he Students did get more then 50 points together
+    assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("Score").toString());
+}
+
+
+@Test
+public void TestLoops()throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer("{\n" +
+                "StudentOne = 10\n" +
+                "StudentTwo = 1\n" +
+                "\n" +
+                "while (StudentOne > StudentTwo) {\n" +
+                "    if (StudentTwo < 5.0) {\n" +
+                "        StudentTwo++\n" +
+                "    } else if (StudentTwo == 5.0) {\n" +
+                "        StudentTwo = StudentTwo + StudentOne\n" +
+                "    }\n" +
+                "}\n" +
+                "}");
+
+                // {
+                //     StudentOne = 10
+                //     StudentTwo = 1
+                    
+                //     while(StudentOne > StudentTwo ){
+                    
+                //        if( StudentTwo < 5.0){
+                //           StudentTwo++
+                //        }else if(StudentTwo == 5.0){
+                //          StudentTwo = StudentTwo + StudentOne
+                //        }
+                    
+                //     }
+                    
+                //    }
+
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    interpret.InterpretProgram(parsed);
+     
+    assertEquals(new InterpreterDataType("15.0").toString(), interpret.getGlobalVariable("StudentTwo").toString());
+}
+
+@Test
+public void TestLoops2() throws AwkException, IOException {
+    var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
+    var lexer = new Lexer("{\n" +
+            "         studentTwo = 10000\n" +
+            "         studentOne = 1\n" +
+            "\n" +
+            "        for (; studentOne < studentTwo; studentOne++) {\n" +
+            "\n" +
+            "            if (studentOne < 5.0) {\n" +
+            "                studentTwo = studentTwo / 10.0\n" +
+            "            }\n" +
+            "        }\n" +
+            "\n" +
+            "        print(studentOne)\n" +
+            "        print(studentTwo)\n" +
+            "    \n" +
+            "}\n");
+
+    // Begin{
+    //     StudentOne = 100
+    //     StudentTwo = 30
+        
+    //     Together = StudentOne + StudentTwo
+        
+    //     Score = Together > 50
+        
+    //     if (Score){
+    //         print "The Students did get more then 50 points together"
+    //     }
+        
+    //     else {
+    //         print "The Students did not get more then 50 points together"
+    //     }
+    // }
+
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+
+    Interpreter interpret = new Interpreter(parsed, myPath);
+    interpret.InterpretProgram(parsed);
+     
+     //Student two is divided by 10, 5 times before Student One is greater then Student twp
+    assertEquals(new InterpreterDataType("1.0").toString(), interpret.getGlobalVariable("studentTwo").toString());
+}
 }

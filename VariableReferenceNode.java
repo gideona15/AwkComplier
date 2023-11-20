@@ -2,7 +2,7 @@ import java.util.Optional;
 
 public class VariableReferenceNode extends StatementNode {
     private String name;
-    private Optional<Node> expression;
+    private Optional<Node> expression = Optional.empty();
 
     // Constructor
     public VariableReferenceNode(String name, Optional<Node> expression) {
@@ -16,7 +16,10 @@ public class VariableReferenceNode extends StatementNode {
         return expression;
     }
     public String getNameAndExperssion(){
-        return name + "["+expression+"]";
+        if(expression.isPresent())
+            return name + "["+expression.get()+"]";
+        else 
+             return name;
     }
 
     @Override

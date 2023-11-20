@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.List;
 
 public class InterpreterArrayDataType extends InterpreterDataType {
     
@@ -19,8 +20,18 @@ public class InterpreterArrayDataType extends InterpreterDataType {
     public InterpreterDataType getValue(String key) {
         return array.get(key);
     }
+    public Object getkeys() {
+        return array.values();
+    }
 
     public void setValue(String key, InterpreterDataType value) {
         array.put(key, value);
+    }
+     public List<InterpreterDataType> getValues() {
+        return (List<InterpreterDataType>) array.values();
+    }
+    @Override
+    public String toString(){
+        return array.toString();
     }
 }
