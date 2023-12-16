@@ -128,14 +128,13 @@ public  class Parser {
             else
                 throw new AwkException("Block needs a right curly bracket"); // Throw an exception if the right curly bracket is missing
         } else {
+                while (helper.AcceptSeperators());
             // If there is no left curly bracket, parse a single statement and add it to the block
             var Pnode = ParseStatement();
                 while (helper.AcceptSeperators());
-
             if (Pnode != null)
                 node.getSnode().add(Pnode);
-        }
-    
+        }    
         // Return the BlockNode representing the parsed block
         return node;
     }
@@ -538,7 +537,7 @@ public  class Parser {
        
         if (helper.Peek(0).get().getType() == Token.TokenType.NUMBER) {
             // If the next token is a number, parse it as a ConstantNode.
-            var output = helper.Peek(0).get().getValue();
+            var output = Float.parseFloat(helper.Peek(0).get().getValue());
             helper.MatchAndRemove(Token.TokenType.NUMBER);
             return Optional.of(new ConstantNode(output));
 
@@ -939,12 +938,12 @@ public  class Parser {
             if (!condition.isPresent()) {
                 throw new AwkException("Needs a valid condition; it can't be empty");
             }
-    
+
             helper.MatchAndRemove(Token.TokenType.RIGHT_PAREN); // Consume the right parenthesis
     
             // Parse a block of statements for the "if" branch
             var block = ParseBlock();
-    
+
             // Check if the block is null (not a valid "if" statement)
             if (block == null) {
                 throw new AwkException("Not a valid If statement, needs a statement");
@@ -1200,8 +1199,7 @@ public  class Parser {
         throw new AwkException("Needs a return statement"); // Throw an exception if no return value is provided
     }
 }
-
-private DeleteNode ParseDelete() throws AwkException {
+    private DeleteNode ParseDelete() throws AwkException {
     helper.MatchAndRemove(Token.TokenType.DELETE); // Match and remove the "DELETE" token
 
     // Parse an operation for the item to be deleted
@@ -1214,5 +1212,4 @@ private DeleteNode ParseDelete() throws AwkException {
 
     return new DeleteNode(node.get()); // Create and return a new DeleteNode with the parsed operation
 }
-
 }

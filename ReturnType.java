@@ -32,9 +32,9 @@
         // toString method to represent the object as a string
         public String toString() {
             if (value != null && !value.isEmpty()) {
-                return "ReturnType{type=" + type + ", message='" + value + "'}";
+                return value;
             } else {
-                return "ReturnType{type=" + type + "}";
+                return type.toString();
             }
         }
     

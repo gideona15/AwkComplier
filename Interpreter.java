@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -150,7 +148,6 @@ public class Interpreter {
             lineManagement.splitAndAssign();
         }
     }
-    
     private void InterpretBlock(BlockNode block) throws AwkException {
         // Check if the block is null
         if (block == null) {
@@ -176,7 +173,7 @@ public class Interpreter {
             }
         }
     }
-    
+   
     private ReturnType InterpretListOfStatements(LinkedList<StatementNode> statements, HashMap<String, InterpreterDataType> locals) throws AwkException {
 
         ReturnType result = new ReturnType(ReturnType.Type.NONE);
@@ -191,7 +188,6 @@ public class Interpreter {
                 break;  // Exit the loop if a non-None result is encountered
             }
         }
-
         return result;
     }
     public ReturnType ProcessStatement(HashMap<String, InterpreterDataType> locals, StatementNode statement) throws AwkException {
@@ -231,11 +227,11 @@ public class Interpreter {
             // Process ForNode
             ForNode fortype = (ForNode) node;
             ReturnType returntype = new ReturnType(ReturnType.Type.NONE);
-    
             if (fortype.getItialization().isPresent()) {
                 // Process initialization statement
-                StatementNode iteration = (StatementNode) fortype.getIteration().get();
-                ProcessStatement(locals, iteration);
+                StatementNode iteration = (StatementNode) fortype.getItialization().get();
+
+               ProcessStatement(locals, iteration);
             }
             while (Boolean.parseBoolean(getInterpreterDataType(fortype.getCondition().get(), locals).toString())) {
                 // Process the loop statements
@@ -287,7 +283,7 @@ public class Interpreter {
     boolean condition = Boolean.parseBoolean(getInterpreterDataType(ifType.getCondition(), locals).toString());
 
     if (condition) {
-        // If the condition is true, execute the if block
+        // If the co4ndition is true, execute the if block
         returnType = InterpretListOfStatements(ifType.getStatement(), locals);
 
         // Check if the if block has a return type other than NONE
@@ -308,6 +304,7 @@ public class Interpreter {
             return returnType;
     }
     return new ReturnType(ReturnType.Type.NONE);
+
 } else if (node instanceof WhileNode) {
     // Process WhileNode
     WhileNode doWhile = (WhileNode) node;
@@ -324,12 +321,16 @@ public class Interpreter {
             return rtype;
     }
     return new ReturnType(ReturnType.Type.RETURN);
+
 } else if (node instanceof ReturnNode) {
     // Process ReturnNode
+
     ReturnNode returnN = (ReturnNode) node;
     if (returnN.getStatement() != null) {
         // If there is a return value, get and return it
         var value = getInterpreterDataType(returnN.getStatement(), locals);
+
+
         return new ReturnType(ReturnType.Type.RETURN, value.getValue());
     } else
         // If there is no return value, return a generic RETURN type
@@ -351,6 +352,8 @@ else if (node instanceof BreakNode) {
 
 // Process statements that don't match any specific node type
     var someLine = getInterpreterDataType(statement, locals);
+
+
 if (someLine == null)
     // Throw an exception for statements that don't match any node type
     throw new AwkException("None of the statements matched the input -> " + node);
@@ -365,7 +368,6 @@ if (someLine == null)
         if (node instanceof AssignmentNode) {
             // Handle assignment nodes
             AssignmentNode newNode = (AssignmentNode) node;
-
     
             if ((newNode.getTargert() instanceof VariableReferenceNode) || (newNode.getOperattion() == OperationNode.Operation.FIELD_REFERENCE)) {
                 var variable = (VariableReferenceNode) newNode.getTargert();
@@ -497,7 +499,6 @@ if (someLine == null)
     private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables) throws AwkException{
 
         FunctionCallNode userCallFuction = fNode;
-
         if(functionDefinitions.containsKey(userCallFuction.getFunctionName())){
 
             FunctionDefinitionNode function = functionDefinitions.get(userCallFuction.getFunctionName());
@@ -510,15 +511,16 @@ if (someLine == null)
 
                 for(Node para : userCallFuction.getParameters()){
 
-                             if((function.getParameters().get(counter) instanceof VariableReferenceNode)){
-                                 VariableReferenceNode newpara = (VariableReferenceNode)function.getParameters().get(counter++);
+                    if((function.getParameters().get(counter) instanceof VariableReferenceNode)){
 
+                         VariableReferenceNode newpara = (VariableReferenceNode)function.getParameters().get(counter++);
+             
                                    if(newpara.getExperssion().isPresent())
                                      map.put(newpara.getNameAndExperssion(), getInterpreterDataType(para, localVariables));
                                    else
                                      map.put(newpara.getName(), getInterpreterDataType(para, localVariables));
                                 }
-                                else{
+                         else{
                                      if((para instanceof VariableReferenceNode)){
                                          VariableReferenceNode newpara = (VariableReferenceNode)para;
                                           if(newpara.getExperssion().isPresent())
@@ -531,14 +533,13 @@ if (someLine == null)
                                         map.put(function.getParameters().get(counter++).toString(), getInterpreterDataType(para, localVariables));
                                   }
                     }
-                        if(function instanceof BuiltInFunctionDefinitionNode){
-        
+                     if(function instanceof BuiltInFunctionDefinitionNode){
 
-                            ((BuiltInFunctionDefinitionNode)function).execute(map);
+                               ((BuiltInFunctionDefinitionNode)function).execute(map);
                         }
-                        else
-
-                        InterpretListOfStatements(function.getStatementNodes(), map);  
+                        else{
+                           return InterpretListOfStatements(function.getStatementNodes(), map).toString();
+                        }
      
        }else
             throw new AwkException("This fucntion \""+ userCallFuction.getFunctionName() + "\" has never been defined");
@@ -551,24 +552,24 @@ if (someLine == null)
        switch(op){
 
                     case ADDITION:  
-                    Float Avalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) + Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Double Avalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) + Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(Avalue.toString());
                             
                     case SUBTRACTION:  
 
-                        Float Svalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) - Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Double Svalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) - Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(Svalue.toString());
 
                     case MULTIPLICATION:  
-                        Float Mvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) * Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Double Mvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) * Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(Mvalue.toString());
                             
                     case DIVISION:  
-                        Float Dvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) / Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Double Dvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) / Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(Dvalue.toString());
 
                     case MODULUS:  
-                        Float MODvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) % Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Double MODvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) % Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(MODvalue.toString());
 
 
@@ -576,7 +577,8 @@ if (someLine == null)
                      case LOGICAL_EQUAL:{
                         Object leftValue = getInterpreterDataType(left, localVariables);
                         Object rightValue = getInterpreterDataType(right.get(), localVariables);
-                               if (leftValue instanceof String && rightValue instanceof String) {
+
+                        if (leftValue instanceof String && rightValue instanceof String) {
                                    // Both values are strings, so compare them as strings
                                    boolean isEqual = leftValue.equals(rightValue);
                                    return new InterpreterDataType(String.valueOf(isEqual));
@@ -632,19 +634,19 @@ if (someLine == null)
                                }
 
                     case LESS_THAN:  
-                        Boolean LESS_THANvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) < Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Boolean LESS_THANvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) < Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(LESS_THANvalue.toString());
                             
                     case LESS_THAN_EQUAL:  
-                        Boolean LESS_THAN_EQUALvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) <= Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Boolean LESS_THAN_EQUALvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) <= Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(LESS_THAN_EQUALvalue.toString());
 
                     case GREATER_THAN:  
-                        Boolean GREATER_THANvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) > Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Boolean GREATER_THANvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) > Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(GREATER_THANvalue.toString());
                             
                     case GREATER_THAN_EQUAL:  
-                        Boolean GREATER_THAN_EQUALvalue = Float.parseFloat(getInterpreterDataType(left, localVariables).toString()) >= Float.parseFloat(getInterpreterDataType(right.get(), localVariables).toString());
+                        Boolean GREATER_THAN_EQUALvalue = Double.parseDouble(getInterpreterDataType(left, localVariables).toString()) >= Double.parseDouble(getInterpreterDataType(right.get(), localVariables).toString());
                                return new InterpreterDataType(GREATER_THAN_EQUALvalue.toString());
       
 
@@ -710,7 +712,7 @@ if (someLine == null)
                        if(newNode.getExperssion().isPresent()){
                            if(this.globalVariables.containsKey(newNode.getName())){
 
-                                  Float value = Float.parseFloat(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
                                   
                                   InterpreterDataType hold = globalVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -724,7 +726,7 @@ if (someLine == null)
                          if(newNode.getExperssion().isPresent()){
                            if(localVariables.containsKey(newNode.getName())){
 
-                                  Float value = Float.parseFloat(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
                        
                                   InterpreterDataType hold = localVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -745,7 +747,7 @@ if (someLine == null)
 
                        if(newNode.getExperssion().isPresent()){
                            if(this.globalVariables.containsKey(newNode.getNameAndExperssion())){
-                                  Float value = Float.parseFloat(globalVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
+                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
                                   
                                   InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperssion());
                                   getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
@@ -754,7 +756,7 @@ if (someLine == null)
                            }
                            else if(localVariables.containsKey(newNode.getNameAndExperssion())){
 
-                                  Float value = Float.parseFloat(localVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
+                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
                                   
                                   InterpreterDataType hold = localVariables.get(newNode.getNameAndExperssion());
                                   getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
@@ -766,17 +768,16 @@ if (someLine == null)
                          if(!newNode.getExperssion().isPresent()){
                              if(this.globalVariables.containsKey(newNode.getName())){
 
-                                Float value = Float.parseFloat(globalVariables.get(newNode.getName()).getValue()) + 1;
+                                Double value = Double.parseDouble(globalVariables.get(newNode.getName()).getValue()) + 1;
                                   InterpreterDataType hold = globalVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
-                                                              //      System.out.println(getGlobalVariable(newNode.getName()));
 
                                   return hold;
                            }
                            else if(localVariables.containsKey(newNode.toString())){
 
-                                 Float value = Float.parseFloat(localVariables.get(newNode.getName()).getValue()) + 1;
+                                 Double value = Double.parseDouble(localVariables.get(newNode.getName()).getValue()) + 1;
                                   
                                   InterpreterDataType hold = localVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -797,7 +798,7 @@ if (someLine == null)
 
                        if(newNode.getExperssion().isPresent()){
                            if(this.globalVariables.containsKey(newNode.getNameAndExperssion())){
-                                  Float value = Float.parseFloat(globalVariables.get(newNode.getNameAndExperssion()).getValue()) - 1;
+                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperssion()).getValue()) - 1;
                                   
                                   InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperssion());
                                   getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
@@ -806,7 +807,7 @@ if (someLine == null)
                            }
                            else if(localVariables.containsKey(newNode.getNameAndExperssion())){
 
-                                  Float value = Float.parseFloat(localVariables.get(newNode.getNameAndExperssion()).getValue()) -1;
+                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperssion()).getValue()) -1;
                                   
                                   InterpreterDataType hold = localVariables.get(newNode.getNameAndExperssion());
                                   getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
@@ -818,7 +819,7 @@ if (someLine == null)
                          if(!newNode.getExperssion().isPresent()){
                              if(this.globalVariables.containsKey(newNode.getName())){
 
-                                Float value = Float.parseFloat(globalVariables.get(newNode.getName()).getValue()) - 1;
+                                Double value = Double.parseDouble(globalVariables.get(newNode.getName()).getValue()) - 1;
                                   InterpreterDataType hold = globalVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
@@ -827,7 +828,7 @@ if (someLine == null)
                            }
                            else if(localVariables.containsKey(newNode.toString())){
 
-                                 Float value = Float.parseFloat(localVariables.get(newNode.getName()).getValue()) - 1;
+                                 Double value = Double.parseDouble(localVariables.get(newNode.getName()).getValue()) - 1;
                                   
                                   InterpreterDataType hold = localVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -842,11 +843,10 @@ if (someLine == null)
                             throw new AwkException("Must be a VariableReferenceNode Node");
 
                          VariableReferenceNode newNode = (VariableReferenceNode)left;
-
                        if(newNode.getExperssion().isPresent()){
                            if(this.globalVariables.containsKey(newNode.toString())){
 
-                                  Float value = Float.parseFloat(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
                                   
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
@@ -859,7 +859,7 @@ if (someLine == null)
                          if(newNode.getExperssion().isPresent()){
                             if(localVariables.containsKey(newNode.toString())){
 
-                                  Float value = Float.parseFloat(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
                        
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
@@ -978,8 +978,9 @@ if (someLine == null)
       
          }else
              for(InterpreterDataType out: str.values())
-                    System.out.println(out.getValue());
-
+                    System.out.printf("%s\n", out.getValue());
+       
+                
         return " ";
     }
     private  String builtInGetline(HashMap<String, InterpreterDataType> str) {
