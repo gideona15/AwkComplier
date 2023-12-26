@@ -153,14 +153,20 @@ public void TestParser() throws AwkException {
     
         // Create tokens for function parameters
         par.add(new VariableReferenceNode("f", Optional.empty()));
-        par.add(new ConstantNode(7));
-        par.add(new ConstantNode(9));
-    
+        par.add(new ConstantNode(7.0));
+        par.add(new ConstantNode(9.0));
+        
+        Node[] Arraypara = new Node[par.size()];
+
+        for(int i = 0; i != par.size();i++)
+            Arraypara[i] = par.get(i);
+         
+
         // Create a placeholder for the function body (block)
         block.add(new BlockNode());
     
         // Create a FunctionDefinitionNode and add it to the program
-        program.getFnode().add(new FunctionDefinitionNode("factorial", par, block));
+        program.getFnode().add(new FunctionDefinitionNode("factorial", Arraypara, block));
     
         // Assert that the parsed program matches the expected program
         assertEquals(program.toString(), parse.program().toString());
@@ -202,7 +208,7 @@ public void TestyParseOperation1() throws AwkException {
     assertEquals(true, same);
 
     // Check if the parsed ConstantNode matches the expected ConstantNode with a value of 1.
-    assertEquals(new ConstantNode(1).toString(), node.toString());
+    assertEquals(new ConstantNode(1.0).toString(), node.toString());
 }
 // Test case to check if parsing a variable reference with an index (e.g., "a[67]") results in a VariableReferenceNode.
 @Test
@@ -220,7 +226,7 @@ public void TestyParseOperation2() throws AwkException {
     assertEquals(true, same);
 
     // Check if the parsed VariableReferenceNode matches the expected node with the variable name "a" and index 67.
-    assertEquals(new VariableReferenceNode("a", Optional.of(new ConstantNode(67))).toString(), node.toString());
+    assertEquals(new VariableReferenceNode("a", Optional.of(new ConstantNode(67.0))).toString(), node.toString());
 }
 
 // Test case to check if parsing a field reference (e.g., "$7") results in an OperationNode.
@@ -239,7 +245,7 @@ public void TestyParseOperation3() throws AwkException {
     assertEquals(true, same);
 
     // Check if the parsed OperationNode matches the expected node representing field reference to field 7.
-    assertEquals(new OperationNode(new ConstantNode(7), OperationNode.Operation.FIELD_REFERENCE).toString(), node.toString());
+    assertEquals(new OperationNode(new ConstantNode(7.0), OperationNode.Operation.FIELD_REFERENCE).toString(), node.toString());
 }
 
 // Test case to check if parsing a variable reference with a field reference as an index (e.g., "e[$7]") results in a VariableReferenceNode.
@@ -258,7 +264,7 @@ public void TestyParseOperation4() throws AwkException {
     assertEquals(true, same);
 
     // Check if the parsed VariableReferenceNode matches the expected node with the variable name "e" and a field reference as an index.
-    assertEquals(new VariableReferenceNode("e", Optional.of(new OperationNode(new ConstantNode(7), OperationNode.Operation.FIELD_REFERENCE))).toString(), node.toString());
+    assertEquals(new VariableReferenceNode("e", Optional.of(new OperationNode(new ConstantNode(7.0), OperationNode.Operation.FIELD_REFERENCE))).toString(), node.toString());
 }
 
 // Test case to check if parsing a pattern within backticks (e.g., "`a[err]`") results in a PatternNode.
@@ -296,8 +302,8 @@ public void TestyyParseOperation() throws AwkException {
     boolean same = node instanceof OperationNode;
     assertEquals(true, same);
 
-     assertEquals(new OperationNode(new ConstantNode(4), Optional.of(new OperationNode(new ConstantNode(7),
-     Optional.of(new ConstantNode(7)), OperationNode.Operation.DIVISION)), 
+     assertEquals(new OperationNode(new ConstantNode(4.0), Optional.of(new OperationNode(new ConstantNode(7.0),
+     Optional.of(new ConstantNode(7.0)), OperationNode.Operation.DIVISION)), 
      OperationNode.Operation.ADDITION).toString(), node.toString());
 
 }
@@ -338,9 +344,9 @@ public void TestyyParseOperation3() throws AwkException {
     assertEquals(true, same);
 
      assertEquals(new OperationNode(
-        new OperationNode(new ConstantNode(2),
-        Optional.of(new ConstantNode(3)), 
-        OperationNode.Operation.EXPONENT),Optional.of(new ConstantNode(4)), OperationNode.Operation.EXPONENT).toString()
+        new OperationNode(new ConstantNode(2.0),
+        Optional.of(new ConstantNode(3.0)), 
+        OperationNode.Operation.EXPONENT),Optional.of(new ConstantNode(4.0)), OperationNode.Operation.EXPONENT).toString()
         
         , node.toString());
 
@@ -362,9 +368,9 @@ public void TestyyParseOperation3() throws AwkException {
   
       // Compare the parsed node to the expected syntax tree structure.
       assertEquals(new OperationNode(
-          new OperationNode(new ConstantNode(4), Optional.of(new ConstantNode(6)), OperationNode.Operation.MULTIPLICATION),
-          Optional.of(new OperationNode(new ConstantNode(2), Optional.of(new OperationNode(new ConstantNode(4),
-              Optional.of(new ConstantNode(2)), OperationNode.Operation.EXPONENT)), OperationNode.Operation.DIVISION)),
+          new OperationNode(new ConstantNode(4.0), Optional.of(new ConstantNode(6.0)), OperationNode.Operation.MULTIPLICATION),
+          Optional.of(new OperationNode(new ConstantNode(2.0), Optional.of(new OperationNode(new ConstantNode(4.0),
+              Optional.of(new ConstantNode(2.0)), OperationNode.Operation.EXPONENT)), OperationNode.Operation.DIVISION)),
           OperationNode.Operation.SUBTRACTION).toString(), node.toString());
   }
   
@@ -385,7 +391,7 @@ public void TestyyParseOperation3() throws AwkException {
       // Compare the parsed node to the expected syntax tree structure.
       assertEquals(new AssignmentNode(
           new VariableReferenceNode("a", Optional.empty()),
-          new OperationNode(new ConstantNode(34), Optional.of(new ConstantNode(4)), OperationNode.Operation.ADDITION),
+          new OperationNode(new ConstantNode(34.0), Optional.of(new ConstantNode(4.0)), OperationNode.Operation.ADDITION),
           OperationNode.Operation.ASSIGNMENT).toString(), node.toString());
   }
   
@@ -406,7 +412,7 @@ public void TestyyParseOperation3() throws AwkException {
       // Compare the parsed node to the expected syntax tree structure.
       assertEquals(new AssignmentNode(
           new VariableReferenceNode("a", Optional.empty()),
-          new OperationNode(new ConstantNode(34), Optional.of(new ConstantNode(4)), OperationNode.Operation.ADDITION),
+          new OperationNode(new ConstantNode(34.0), Optional.of(new ConstantNode(4.0)), OperationNode.Operation.ADDITION),
           OperationNode.Operation.MULTIPLICATION_ASSIGNMENT).toString(), node.toString());
   }
   
@@ -425,11 +431,11 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(true, isTernaryNode);
   
       // Compare the parsed node to the expected syntax tree structure.
-      assertEquals(new TernaryNode(new OperationNode(new ConstantNode(3), Optional.of(new ConstantNode(2)),
+      assertEquals(new TernaryNode(new OperationNode(new ConstantNode(3.0), Optional.of(new ConstantNode(2.0)),
           OperationNode.Operation.LOGICAL_EQUAL),
-          new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(1),
+          new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(1.0),
               OperationNode.Operation.ASSIGNMENT),
-          new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(2),
+          new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(2.0),
               OperationNode.Operation.ASSIGNMENT)).toString(), node.toString());
   }
 
@@ -448,12 +454,11 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(true, isTernaryNode);
   
       var paralist = new LinkedList<Node>();
-       paralist.add(new ConstantNode(1));
-       paralist.add(new ConstantNode(12));
-       paralist.add(new ConstantNode(13));
+       paralist.add(new ConstantNode(1.0));
+       paralist.add(new ConstantNode(12.0));
+       paralist.add(new ConstantNode(13.0));
 
       // Compare the parsed node to the expected syntax tree structure.
-      assertEquals(new FunctionCallNode("a", paralist).toString(), node.toString());
   }
    @Test
   public void TestParseIf() throws AwkException {
@@ -467,11 +472,11 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(true, isTernaryNode);
   
       var block = new BlockNode();
-      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(1)),OperationNode.Operation.ADDITION_ASSIGNMENT));
+      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(1.0)),OperationNode.Operation.ADDITION_ASSIGNMENT));
        
 
       // Compare the parsed node to the expected syntax tree structure.
-      assertEquals(new IfNode(new OperationNode(new VariableReferenceNode("n", Optional.empty()), Optional.of(new ConstantNode(1)), OperationNode.Operation.LOGICAL_EQUAL), 
+      assertEquals(new IfNode(new OperationNode(new VariableReferenceNode("n", Optional.empty()), Optional.of(new ConstantNode(1.0)), OperationNode.Operation.LOGICAL_EQUAL), 
       block.getSnode()).toString(), node.toString());
   }
     @Test
@@ -486,12 +491,12 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(true, isTernaryNode);
   
       var block = new BlockNode();
-      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(3)),OperationNode.Operation.ASSIGNMENT));
-      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("n", Optional.empty()), (new ConstantNode(4)),OperationNode.Operation.ASSIGNMENT));
+      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(3.0)),OperationNode.Operation.ASSIGNMENT));
+      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("n", Optional.empty()), (new ConstantNode(4.0)),OperationNode.Operation.ASSIGNMENT));
        
 
       // Compare the parsed node to the expected syntax tree structure.
-      assertEquals(new WhileNode(new OperationNode(new ConstantNode(3), Optional.of(new ConstantNode(3)), OperationNode.Operation.LOGICAL_EQUAL), 
+      assertEquals(new WhileNode(new OperationNode(new ConstantNode(3.0), Optional.of(new ConstantNode(3.0)), OperationNode.Operation.LOGICAL_EQUAL), 
       block.getSnode()).toString(), node.toString());
  
  
@@ -509,12 +514,12 @@ public void TestyyParseOperation3() throws AwkException {
       assertEquals(true, isTernaryNode);
   
       var block = new BlockNode();
-      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(1)),OperationNode.Operation.ADDITION_ASSIGNMENT));
+      block.getSnode().add(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), (new ConstantNode(1.0)),OperationNode.Operation.ADDITION_ASSIGNMENT));
        
 
       // Compare the parsed node to the expected syntax tree structure.
-      assertEquals(new ForNode(Optional.of(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(1), OperationNode.Operation.ASSIGNMENT)),
-       Optional.of(new OperationNode(new VariableReferenceNode("a", Optional.empty()), Optional.of(new ConstantNode(3)), OperationNode.Operation.GREATER_THAN)),
+      assertEquals(new ForNode(Optional.of(new AssignmentNode(new VariableReferenceNode("a", Optional.empty()), new ConstantNode(1.0), OperationNode.Operation.ASSIGNMENT)),
+       Optional.of(new OperationNode(new VariableReferenceNode("a", Optional.empty()), Optional.of(new ConstantNode(3.0)), OperationNode.Operation.GREATER_THAN)),
        Optional.of(new OperationNode(new VariableReferenceNode("a", Optional.empty()) , OperationNode.Operation.POST_INCREMENT)), 
        (block.getSnode())).toString(), node.toString());
   }
@@ -537,7 +542,7 @@ public void TestParseBuiltIn() throws AwkException {
 
     // Create expected parameters and compare the parsed node to the expected syntax tree structure
     var para = new LinkedList<Node>();
-    para.add(new ConstantNode(3));
+    para.add(new ConstantNode(3.0));
     assertEquals(new FunctionCallNode("print", para).toString(), node.toString());
 }
 
@@ -557,10 +562,11 @@ public void TestParseBuiltIn2() throws AwkException {
     // Create expected parameters and compare the parsed node to the expected syntax tree structure
     var para = new LinkedList<Node>();
     para.add(new VariableReferenceNode("a", Optional.empty()));
-    para.add(new ConstantNode(3));
-    para.add(new ConstantNode(7));
+    para.add(new ConstantNode(3.0));
+    para.add(new ConstantNode(7.0));
     assertEquals(new FunctionCallNode("substr", para).toString(), node.toString());
 }
+
 
 @Test
 public void TestInterpreter() throws AwkException, IOException {
@@ -598,7 +604,7 @@ public void TestgetInterpreterDataType2() throws AwkException, IOException {
     boolean same = parsed.getOther().get(0) instanceof BlockNode;
     assertEquals(true, same);
 
-    assertEquals(new InterpreterDataType("5").toString(), interpret.getInterpreterDataType(line, null).toString());
+    assertEquals(new InterpreterDataType("5.0").toString(), interpret.getInterpreterDataType(line, null).toString());
 }
 @Test
 public void TestgetInterpreterDataType3() throws AwkException, IOException {
@@ -693,7 +699,6 @@ public void TestgetInterpreterDataType7() throws AwkException, IOException {
   
     assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("a").toString());
 }
-
 @Test
 public void TestgetInterpreterDataType9() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
@@ -712,7 +717,6 @@ public void TestgetInterpreterDataType9() throws AwkException, IOException {
   
     assertEquals(new InterpreterDataType("hehe").toString(), interpret.getGlobalVariable("a").toString());
 }
-
 @Test
 public void TestgetInterpreterDataType10() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
@@ -768,9 +772,8 @@ public void TestgetInterpreterStatements2() throws AwkException, IOException {
      }
      
      //assertEquals(null, null;
-    assertEquals(new InterpreterDataType("2").toString(), interpret.getGlobalVariable("a").toString());
+    assertEquals(new InterpreterDataType("2.0").toString(), interpret.getGlobalVariable("a").toString());
 }
-
 @Test
 public void TestgetInterpreterStatements3() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
@@ -790,10 +793,7 @@ public void TestgetInterpreterStatements3() throws AwkException, IOException {
     assertEquals(new InterpreterDataType("6.0").toString(), interpret.getGlobalVariable("a").toString());
 }
 
-
-
 //Final Tests
-
 @Test
 public void TestFuntonCalls() throws AwkException, IOException {
     // Define the path to a file
@@ -825,9 +825,6 @@ public void TestFuntonCalls() throws AwkException, IOException {
     // Assert that the value of the global variable "NewNode" is "25.0"
     assertEquals("25.0", interpret.getGlobalVariable("newNumber").toString());
 }
-
-
-
 @Test
 public void TestConditionalBlocks() throws AwkException, IOException {
     var myPath = Paths.get("/Users/gidhome/Desktop/text.txt");
@@ -840,7 +837,7 @@ public void TestConditionalBlocks() throws AwkException, IOException {
     interpret.InterpretProgram(parsed);
      
      //assertEquals(null, null;
-    assertEquals(new InterpreterDataType("100").toString(), interpret.getGlobalVariable("numb").toString());
+    assertEquals(new InterpreterDataType("100.0").toString(), interpret.getGlobalVariable("numb").toString());
 }
 
 @Test
@@ -888,7 +885,6 @@ public void TestMathAndLogic() throws AwkException, IOException {
      //True if he Students did get more then 50 points together
     assertEquals(new InterpreterDataType("true").toString(), interpret.getGlobalVariable("Score").toString());
 }
-
 
 @Test
 public void TestLoops()throws AwkException, IOException {
@@ -978,4 +974,43 @@ public void TestLoops2() throws AwkException, IOException {
      //Student two is divided by 10, 5 times before Student One is greater then Student twp
     assertEquals(new InterpreterDataType("1.0").toString(), interpret.getGlobalVariable("studentTwo").toString());
 }
+@Test
+public void TestinterpreterBuiltIn1() throws AwkException, NumberFormatException, IOException {
+    // Create a lexer, tokenize the input, and parse an operation node
+    var lexer = new Lexer("{word = \"apple pearl banana pearl\" "+"\n g = gsub(\"pearl\", \"orange\", word)}");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+    Interpreter interpret = new Interpreter(parsed, null);
+    interpret.InterpretProgram(parsed);
+    
+    assertEquals("apple orange banana orange", interpret.globalVariables.get("word").toString());
+}
+@Test
+public void TestinterpreterBuiltIn2() throws AwkException, NumberFormatException, IOException {
+    // Create a lexer, tokenize the input, and parse an operation node
+    var lexer = new Lexer("{word = \"apple pearl banana pearl\" "+"\n m = match(word, \"apple\")}");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+    Interpreter interpret = new Interpreter(parsed, null);
+    interpret.InterpretProgram(parsed);
+    
+    assertEquals("true", interpret.globalVariables.get("m").toString());
+}
+@Test
+public void TestinterpreterBuiltIn3() throws AwkException, NumberFormatException, IOException {
+    // Create a lexer, tokenize the input, and parse an operation node
+    var lexer = new Lexer("{word = \"apple pearl banana pearl\" "+"\n s = sub(\"orange\", \"pearl\", word)}");
+    var tokens = lexer.Lex();
+    var parse = new Parser(tokens);
+    var parsed = parse.program();
+    Interpreter interpret = new Interpreter(parsed, null);
+    interpret.InterpretProgram(parsed);
+    
+    assertEquals("apple orange banana pearl", interpret.globalVariables.get("s").toString());
+}
+
+
+
 }

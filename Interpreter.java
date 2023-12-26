@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 
 public class Interpreter {
@@ -75,8 +75,8 @@ public class Interpreter {
             // Split the line using the field separator
             String[] fields = line.split(fieldSeparator);
             // Assign fields to $0, $1, $2, etc.
-            for (int i = 1; i <= fields.length; i++) {
-                String variableName = "$" + i;
+            for (Integer i = 1; i <= fields.length; i++) {
+                String variableName = "$" + Double.parseDouble(i.toString());
                 if (globalVariables.containsKey(variableName)) {
                     globalVariables.get(variableName).setValue(globalVariables.get(variableName).getValue() + " "+fields[i - 1]);
                 }
@@ -105,10 +105,17 @@ public class Interpreter {
         // Add the entire file content as $0
         private void addFile() {
             StringBuilder lines = new StringBuilder();
+            int n = 0;
             for (String line : inputLines) {
-                lines.append(line).append("\n");
+                n++;
+                
+                if(n == inputLines.size())
+                    lines.append(line);
+                else 
+                    lines.append(line).append("\n");
+
             }
-            globalVariables.put("$0", new InterpreterDataType(lines.toString()));
+            globalVariables.put("$0.0", new InterpreterDataType(lines.toString()));
         }
     }
     
@@ -503,24 +510,23 @@ if (someLine == null)
 
             FunctionDefinitionNode function = functionDefinitions.get(userCallFuction.getFunctionName());
 
-                 if(function.getParameters().size() != userCallFuction.getParameters().size()&& !userCallFuction.getFunctionName().equals("print"))
-                    throw new AwkException("The inputed function name \"" +userCallFuction.getFunctionName() +"\" had parameter size of " +userCallFuction.getParameters().size()+ " Compared to the expected " + function.getParameters().size());
+                 if(function.getParameters().length != userCallFuction.getParameters().size()&& !userCallFuction.getFunctionName().equals("print"))
+                    throw new AwkException("The inputed function name \"" +userCallFuction.getFunctionName() +"\" had parameter size of " +userCallFuction.getParameters().size()+ " Compared to the expected " + function.getParameters().length);
    
                 HashMap<String, InterpreterDataType> map = new HashMap<String, InterpreterDataType>();
-                int counter = 0;
+                Integer counter = 0;
 
                 for(Node para : userCallFuction.getParameters()){
 
-                    if((function.getParameters().get(counter) instanceof VariableReferenceNode)){
-
-                         VariableReferenceNode newpara = (VariableReferenceNode)function.getParameters().get(counter++);
+                    if((function.getParameters()[counter]  instanceof VariableReferenceNode)){
+                         VariableReferenceNode newpara = (VariableReferenceNode)function.getParameters()[(counter++)];
              
                                    if(newpara.getExperssion().isPresent())
                                      map.put(newpara.getNameAndExperssion(), getInterpreterDataType(para, localVariables));
                                    else
                                      map.put(newpara.getName(), getInterpreterDataType(para, localVariables));
                                 }
-                         else{
+                            else{
                                      if((para instanceof VariableReferenceNode)){
                                          VariableReferenceNode newpara = (VariableReferenceNode)para;
                                           if(newpara.getExperssion().isPresent())
@@ -528,23 +534,33 @@ if (someLine == null)
                                       else
                                            
                                           map.put(newpara.getName(), getInterpreterDataType(para, localVariables));
+
+                                     } else if(para instanceof OperationNode){
+                                          OperationNode newpara = (OperationNode)para;
+
+                                          if(newpara.getOp().toString() == "FIELD_REFERENCE")
+                                                map.put("$" + newpara.getLeftExpression().toString(), getInterpreterDataType(para, localVariables));
+                                            
+                                          else 
+                                                map.put(counter.toString(), getInterpreterDataType(para, localVariables));
+
                                      }else
 
-                                        map.put(function.getParameters().get(counter++).toString(), getInterpreterDataType(para, localVariables));
+                                        map.put(counter.toString(), getInterpreterDataType(para, localVariables));
+                                        counter++;
                                   }
                     }
                      if(function instanceof BuiltInFunctionDefinitionNode){
 
-                               ((BuiltInFunctionDefinitionNode)function).execute(map);
+                              return ((BuiltInFunctionDefinitionNode)function).execute(map);
                         }
+
                         else{
                            return InterpretListOfStatements(function.getStatementNodes(), map).toString();
                         }
      
        }else
             throw new AwkException("This fucntion \""+ userCallFuction.getFunctionName() + "\" has never been defined");
-
-        return " ";
     }
     private InterpreterDataType getOperationalIDT(Node left, Optional<Node> right, OperationNode.Operation op, HashMap<String, InterpreterDataType> localVariables) throws AwkException{
      
@@ -908,7 +924,6 @@ if (someLine == null)
                 }    
                           
     }
-    
 
     private LineManager startLineManager(Path file) throws IOException{
 
@@ -922,9 +937,7 @@ if (someLine == null)
          HashMap<String, BuiltInFunctionDefinitionNode> operations = new HashMap<>();
       
         BuiltInFunctionDefinitionNode printfBuilt = new BuiltInFunctionDefinitionNode("printf",test -> builtInPrint(test), true);
-        printfBuilt.getParameters().add(new Node());
         BuiltInFunctionDefinitionNode printBuilt = new BuiltInFunctionDefinitionNode("print",test -> builtInPrint(test), true);
-        printBuilt.getParameters().add(new Node());
 
         BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInGetline(test), true);
         BuiltInFunctionDefinitionNode nextbuilt= new BuiltInFunctionDefinitionNode("next",test -> builtInGetline(test), false);
@@ -932,15 +945,27 @@ if (someLine == null)
         BuiltInFunctionDefinitionNode gsubBuilt = new BuiltInFunctionDefinitionNode("gsub",test -> builtInGsub(test), true);
         BuiltInFunctionDefinitionNode matchBuilt = new BuiltInFunctionDefinitionNode("match",test -> builtInMatch(test), true);
         BuiltInFunctionDefinitionNode subBuilt = new BuiltInFunctionDefinitionNode("sub",test -> builtISub(test), true);
- 
+
         BuiltInFunctionDefinitionNode indexBuilt = new BuiltInFunctionDefinitionNode("index",test -> builtIndex(test), true);
         BuiltInFunctionDefinitionNode lengthBuilt = new BuiltInFunctionDefinitionNode("length",test -> builtInLength(test), true);
-       
-        BuiltInFunctionDefinitionNode splitBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInSplit(test), true);
-        BuiltInFunctionDefinitionNode substrBuilt = new BuiltInFunctionDefinitionNode("gsub",test -> builtInSubstr(test), true);
-        BuiltInFunctionDefinitionNode tolowerBuilt = new BuiltInFunctionDefinitionNode("match",test -> builtInTolower(test), true);
-        BuiltInFunctionDefinitionNode toupperBuilt = new BuiltInFunctionDefinitionNode("sub",test -> builtInToupper(test), true);
-    
+
+        BuiltInFunctionDefinitionNode splitBuilt = new BuiltInFunctionDefinitionNode("split",test -> builtInSplit(test), true);
+        BuiltInFunctionDefinitionNode substrBuilt = new BuiltInFunctionDefinitionNode("substr",test -> builtInSubstr(test), true);
+        BuiltInFunctionDefinitionNode tolowerBuilt = new BuiltInFunctionDefinitionNode("tolower",test -> builtInTolower(test), true);
+        BuiltInFunctionDefinitionNode toupperBuilt = new BuiltInFunctionDefinitionNode("toupper",test -> builtInToupper(test), true);
+
+                printfBuilt.setParameters(new Node[Short.MAX_VALUE]);
+                printBuilt.setParameters(new Node[Short.MAX_VALUE]);
+                gsubBuilt.setParameters(new Node[3]);
+                matchBuilt.setParameters(new Node[2]);
+                subBuilt.setParameters(new Node[3]);
+                indexBuilt.setParameters(new Node[2]);
+                lengthBuilt.setParameters(new Node[1]);
+                splitBuilt.setParameters(new Node[3]);
+                substrBuilt.setParameters(new Node[3]);
+                tolowerBuilt.setParameters(new Node[1]);
+                toupperBuilt.setParameters(new Node[1]);
+
 
         //getline and next : these will call SplitAndAssign – we won’t do the other forms.
         operations.put("print", printBuilt);
@@ -949,7 +974,7 @@ if (someLine == null)
         operations.put("getline", printfBuilt);
         operations.put("next", nextbuilt);
 
-        operations.put("gub", gsubBuilt);
+        operations.put("gsub", gsubBuilt);
         operations.put("match", matchBuilt);
         operations.put("sub", subBuilt);
 
@@ -976,10 +1001,11 @@ if (someLine == null)
                        
                 }
       
-         }else
+         }else{
              for(InterpreterDataType out: str.values())
-                    System.out.printf("%s\n", out.getValue());
-       
+                    System.out.printf("%s", out.getValue());
+                 System.out.println("");
+         }
                 
         return " ";
     }
@@ -987,76 +1013,128 @@ if (someLine == null)
         return Boolean.toString(this.lineManagement.splitAndAssign());
 
     }  
-    private  String builtInGsub(HashMap<String, InterpreterDataType> str) {
-        str.get("gsub");
-        String regexp,  replacement, input;
-        
-         return java.util.regex.Pattern.compile("regexp").matcher("input").replaceAll("replacement");
+    private  String builtInGsub(Map<String, InterpreterDataType> str) {
+    Set<String> keys = str.keySet();
+
+    String regexp = str.get(keys.toArray()[0]).toString();
+    String replacement = str.get(keys.toArray()[1]).toString();
+    String input = str.get(keys.toArray()[2]).toString();
+
+    // Create a Matcher object
+    java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(regexp).matcher(input);
+
+    // Count the number of replacements
+    Integer count = 0;
+
+    // Perform replacements and count them
+    StringBuffer result = new StringBuffer();
+    while (matcher.find()) {
+        matcher.appendReplacement(result, replacement);
+        count++;
     }
+    matcher.appendTail(result);
+
+    // Update the global variable if present
+    if (this.globalVariables.containsKey(keys.toArray()[2])) {
+        this.globalVariables.get(keys.toArray()[2]).setValue(result.toString());
+    }
+
+    // Return the modified string and the count of replacements
+    
+    return count.toString();
+}
     private  String builtInMatch(HashMap<String, InterpreterDataType> str) {
 
-        String regexp, input;
-        Pattern pattern = Pattern.compile("regexp");
-        Matcher matcher = pattern.matcher("input");
-       // java.util.regex.Pattern.compile(regexp).matcher(input).find();
+         Set<String> keys = str.keySet();
+
+           String string = str.get(keys.toArray()[0]).toString();
+           String regexp = str.get(keys.toArray()[1]).toString();
+
+    // Create a Matcher object
+        var matcher = java.util.regex.Pattern.compile(string).matcher(regexp);
+
         return Boolean.toString(matcher.find());
     }
     private  String builtISub(HashMap<String, InterpreterDataType> str) {
+       Set<String> keys = str.keySet();
+//
+          String regexp = str.get(keys.toArray()[0]).toString();
+          String replacement = str.get(keys.toArray()[1]).toString();
+          String input = str.get(keys.toArray()[2]).toString();
 
-        String regexp, replacement,  input;
-        Pattern pattern = Pattern.compile("regexp");
-        Matcher matcher = pattern.matcher("input");
-        String result = matcher.replaceFirst("replacement");
-       //return java.util.regex.Pattern.compile(regexp).matcher(input).replaceFirst(replacement);
-        return result;
+          // Create a Matcher object
+           var matcher = java.util.regex.Pattern.compile(regexp).matcher(input);
+            if (this.globalVariables.containsKey(keys.toArray()[2])) {
+                   this.globalVariables.get(keys.toArray()[2]).setValue(matcher.replaceFirst(replacement));
+                 }
+
+        return Boolean.toString(matcher.find());
     }
     private  String builtIndex(HashMap<String, InterpreterDataType> str){
-        
-        String input = (str.get("index").getValue());
-        int index = input.indexOf(input);
-        
-        return Integer.toString(index);
+         Set<String> keys = str.keySet();
+
+         String string = str.get(keys.toArray()[0]).toString();
+         String search = str.get(keys.toArray()[1]).toString();
+ 
+        int index = string.indexOf(search);
+            if(index != -1)
+               return "true";    
+             else 
+               return "false";   
     }
     private  String builtInLength(HashMap<String, InterpreterDataType> str){
-        
-        String input = (str.get("length").getValue());
-        int index = input.length();
+        Set<String> keys = str.keySet();
+
+          String string = str.get(keys.toArray()[0]).toString();
+
+          int index = string.length();
+
         return Integer.toString(index);
     }   
-    private  String builtInSplit( HashMap<String, InterpreterDataType> str){
+    private  String builtInSplit(HashMap<String, InterpreterDataType> str){
         //split(string, array, separator)
-        String input = (str.get("split").getValue());
-         
-        String linput = "apple,banana,cherry";
-        String[] fruits = input.split(",");
+           Set<String> keys = str.keySet();
 
-        return fruits.toString();
+        String string = str.get(keys.toArray()[0]).toString();
+        String separator = str.get(keys.toArray()[1]).toString();
+
+        String[] newlist = string.split(separator);
+
+              for(Integer i = 0; i != newlist.length; i++)
+                 globalVariables.put(keys.toArray()[2].toString() + "[" +Double.parseDouble(i.toString())+"]", new InterpreterDataType(newlist[i]));
+        
+
+        return Integer.toString(newlist.length);
     } 
     private  String builtInSubstr(HashMap<String, InterpreterDataType> str){
        // substr(string, start, length)
-        String input = (str.get("substr").getValue());
+       Set<String> keys = str.keySet();
+
+          String string = str.get(keys.toArray()[0]).toString();
+          String start = str.get(keys.toArray()[1]).toString();
+          String length = str.get(keys.toArray()[2]).toString();
+
 
        // String linput = "Hello, World";
-        String sub = input.substring(1, 2);
+        String sub = string.substring((int)(Double.parseDouble(start)), (int)(Double.parseDouble(length)));
         
         return sub;
     }   
     private  String builtInTolower(HashMap<String, InterpreterDataType> str){
-        String input = (str.get("tolower").getValue());
+       Set<String> keys = str.keySet();
 
-        String linput = "apple,banana,cherry";
-        String lower = input.toLowerCase();
+        String regexp = str.get(keys.toArray()[0]).toString();
+        String lower = regexp.toLowerCase();
 
         return lower;
     } 
     private  String builtInToupper(HashMap<String, InterpreterDataType> str){
-         String input = (str.get("toupper").getValue());
+       Set<String> keys = str.keySet();
 
-        String linput = "apple,banana,cherry";
-        String upper = input.toUpperCase();
+            String regexp = str.get(keys.toArray()[0]).toString();
+            String upper = regexp.toUpperCase();
 
         return upper;
     }    
-   
 
 }

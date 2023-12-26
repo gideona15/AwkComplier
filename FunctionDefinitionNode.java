@@ -6,7 +6,7 @@ public class FunctionDefinitionNode extends Node {
     private String functionname;
     
     // Stores the list of parameters as tokens
-    private LinkedList<Node> Parameters;
+    private Node[] Parameters;
     
     // Stores the list of statement nodes representing the function's body
     private LinkedList<StatementNode> StateNode;
@@ -15,7 +15,7 @@ public class FunctionDefinitionNode extends Node {
     public FunctionDefinitionNode() {
         
     }
-    public FunctionDefinitionNode(String name, LinkedList<Node> Parametersinput, LinkedList<StatementNode> Statementinput) {
+    public FunctionDefinitionNode(String name, Node[] Parametersinput, LinkedList<StatementNode> Statementinput) {
         this.functionname = name;
         this.Parameters = Parametersinput;
         this.StateNode = Statementinput;
@@ -24,18 +24,29 @@ public class FunctionDefinitionNode extends Node {
     public String getName(){
         return functionname;
     }
-    public LinkedList<Node> getParameters(){
+    public Node[] getParameters(){
         return Parameters;
     }
-    public void setParameters(LinkedList<Node> input){
+    public void setParameters(Node[] input){
          Parameters = input;
     }
     public LinkedList<StatementNode> getStatementNodes(){
         return StateNode;
     }
+    private String getAllParamerters(){
+
+        String fullString = "";
+        for(int i = 0; i != Parameters.length; i++){
+           fullString +=  Parameters[i].toString() + ",";
+          
+        }
+       return fullString;
+    }
+
+
 
     // Returns a string representation of the FunctionDefinitionNode
     public String toString() {
-        return "Function name: " + functionname + ", Parameters: " + Parameters + ", Statements => " + StateNode;
+        return "Function name: " + functionname + ", Parameters: " + getAllParamerters() + ", Statements => " + StateNode;
     }
 }

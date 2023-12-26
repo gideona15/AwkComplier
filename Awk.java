@@ -54,15 +54,13 @@ public class Awk {
         Parser parse = new Parser(lexed);
         ProgramNode parsed = parse.program();
 
-       // System.out.println(parsed.toString());
+    //    System.out.println(parsed.toString());
 
 
         //System.out.println("\n_____________Interpreter___________");
        
         Interpreter interpret = new Interpreter(parsed, AwkPath);
-        interpret.InterpretProgram(parsed);
-        
-       
+        interpret.InterpretProgram(parsed);       
 
 
     }

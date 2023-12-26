@@ -51,8 +51,14 @@ public  class Parser {
 
             BlockNode node = ParseBlock();
             sholder.add(node);
+            Node[] Arraypara = new Node[pholder.size()];
+           
 
-            pro.getFnode().add(new FunctionDefinitionNode(name, pholder, sholder));
+                for(int i = 0 ; i != pholder.size();i++){
+                   Arraypara[i] = pholder.get(i);
+                }
+
+            pro.getFnode().add(new FunctionDefinitionNode(name, Arraypara, sholder));
             return true;
         }
     }
@@ -423,15 +429,18 @@ public  class Parser {
                 return node;
         // Check for addition and subtraction operators and construct the corresponding OperationNode.
     
+        if(node instanceof ConstantNode){
+             ConstantNode newnode = (ConstantNode)node;
+              if(newnode.getValuObject() instanceof String)
+              
         if(helper.Peek(0).get().getType() ==  Token.TokenType.STRINGLITERAL){
 
             var output = OperationNode.Operation.Concatenation;
             helper.MatchAndRemove(Token.TokenType.STRINGLITERAL);
-            System.out.println(node);
                 return new OperationNode(node,Optional.of(Expression()), output);
         }
         
-
+     }
 
         return node;
     }
@@ -671,24 +680,6 @@ public  class Parser {
 }
 
     // Parse function parameters
-    private LinkedList<Token> ParseParameters() throws AwkException {
-
-        LinkedList<Token> parameters = new LinkedList<>();
-        if (helper.Peek(0).get().getType() == Token.TokenType.LEFT_PAREN) {
-            helper.MatchAndRemove(Token.TokenType.LEFT_PAREN);
-            while (helper.Peek(0).get().getType() != Token.TokenType.RIGHT_PAREN) {
-                if (helper.Peek(0).get().getType() == Token.TokenType.COMMA) {
-                    helper.MatchAndRemove(Token.TokenType.COMMA);
-                } else {
-                    parameters.add(helper.Peek(0).get());
-                    helper.MatchAndRemove(helper.Peek(0).get().getType());
-                }
-            }
-            helper.MatchAndRemove(Token.TokenType.RIGHT_PAREN);
-        } else
-            throw new AwkException("Function is incomplete; it needs parentheses");
-        return parameters;
-    }
     private LinkedList<Node> ParseNodeParameters() throws AwkException {
 
         LinkedList<Node> parameters = new LinkedList<>();
@@ -827,13 +818,12 @@ public  class Parser {
          else if(helper.Peek(0).get().getType() == Token.TokenType.SPLIT) {               
             
           LinkedList<Node> paralist;   
-            String name = helper.MatchAndRemove(Token.TokenType.WORD).get().getValue().toString();
+            String name = helper.MatchAndRemove(Token.TokenType.SPLIT).get().getValue().toString();
 
              if(helper.Peek(0).get().getType() != Token.TokenType.LEFT_PAREN)             
                 paralist = ParseNodeParametersNoParen();
              else
                 paralist = ParseNodeParameters();
-
             return (new FunctionCallNode(name, paralist));
           }
          else if(helper.Peek(0).get().getType() == Token.TokenType.GSUB) {               
