@@ -108,7 +108,7 @@ public class Interpreter {
             int n = 0;
             for (String line : inputLines) {
                 n++;
-                
+
                 if(n == inputLines.size())
                     lines.append(line);
                 else 
@@ -118,7 +118,6 @@ public class Interpreter {
             globalVariables.put("$0.0", new InterpreterDataType(lines.toString()));
         }
     }
-    
     
     public void addGlobalVariable(String name, InterpreterDataType value) {
         globalVariables.put(name, value);
@@ -266,7 +265,7 @@ public class Interpreter {
     
                 for (InterpreterDataType type : array.getArray().values()) {
                     VariableReferenceNode variable = (VariableReferenceNode) forInType.getValue();
-                    foreach.put(variable.getNameAndExperssion(), type);
+                    foreach.put(variable.getNameAndExperession(), type);
                     returntype = InterpretListOfStatements(forInType.getStatement(), foreach);
                     foreach.clear();
     
@@ -380,34 +379,34 @@ if (someLine == null)
                 var variable = (VariableReferenceNode) newNode.getTargert();
     
                 // Check if the variable is in globalVariables
-                 if (globalVariables.containsKey(variable.getName())|| globalVariables.containsKey(variable.getNameAndExperssion())) {
+                 if (globalVariables.containsKey(variable.getName())|| globalVariables.containsKey(variable.getNameAndExperession())) {
                     // Update the global variable's value
-                    if(!variable.getExperssion().isEmpty()){
+                    if(!variable.getExpression().isEmpty()){
 
-                        var arraytype = (InterpreterArrayDataType)getGlobalVariable(variable.getNameAndExperssion());
-                        arraytype.setValue(variable.getNameAndExperssion(),getInterpreterDataType(newNode.getExpression(), localVariables));
+                        var arraytype = (InterpreterArrayDataType)getGlobalVariable(variable.getNameAndExperession());
+                        arraytype.setValue(variable.getNameAndExperession(),getInterpreterDataType(newNode.getExpression(), localVariables));
                     }else
                        getGlobalVariable(variable.getName()).setValue(getInterpreterDataType(newNode.getExpression(), localVariables).toString());
                 }
-                else if (localVariables.containsKey(variable.getName())|| localVariables.containsKey(variable.getNameAndExperssion())) {
+                else if (localVariables.containsKey(variable.getName())|| localVariables.containsKey(variable.getNameAndExperession())) {
                     // Update the global variable's value
 
-                    if(!variable.getExperssion().isEmpty()){
+                    if(!variable.getExpression().isEmpty()){
 
-                        var arraytype = (InterpreterArrayDataType) localVariables.get(variable.getNameAndExperssion());
-                        arraytype.setValue(variable.getNameAndExperssion(),getInterpreterDataType(newNode.getExpression(), localVariables));
+                        var arraytype = (InterpreterArrayDataType) localVariables.get(variable.getNameAndExperession());
+                        arraytype.setValue(variable.getNameAndExperession(),getInterpreterDataType(newNode.getExpression(), localVariables));
                     }else
                        localVariables.get(variable.getName()).setValue(getInterpreterDataType(newNode.getExpression(), localVariables).toString());
                
                 } 
-                else if (!globalVariables.containsKey(variable.getName())|| !globalVariables.containsKey(variable.getNameAndExperssion())) {
+                else if (!globalVariables.containsKey(variable.getName())|| !globalVariables.containsKey(variable.getNameAndExperession())) {
 
                     // Add the variable to globalVariables
-                    if(variable.getExperssion().isPresent()){
+                    if(variable.getExpression().isPresent()){
                         InterpreterArrayDataType arraytype = new InterpreterArrayDataType();
-                        arraytype.setValue(variable.getNameAndExperssion(),getInterpreterDataType(newNode.getExpression(), localVariables));
+                        arraytype.setValue(variable.getNameAndExperession(),getInterpreterDataType(newNode.getExpression(), localVariables));
                         
-                        globalVariables.put(variable.getNameAndExperssion(), arraytype);
+                        globalVariables.put(variable.getNameAndExperession(), arraytype);
                     } else
                        globalVariables.put(variable.getName(), getInterpreterDataType(newNode.getExpression(), localVariables));
                 }
@@ -440,20 +439,20 @@ if (someLine == null)
             // Handle variable reference nodes
             VariableReferenceNode newNode = (VariableReferenceNode) node;
 
-            if (newNode.getExperssion().isEmpty()) {
+            if (newNode.getExpression().isEmpty()) {
                 // Check for the variable in globalVariables
                 if (this.globalVariables.containsKey(newNode.getName())) {
                     return getGlobalVariable(newNode.getName());
                 }
             }
     
-            if (newNode.getExperssion().isEmpty()) {
+            if (newNode.getExpression().isEmpty()) {
                 // Check for the variable in localVariables
                 if (localVariables.containsKey(newNode.getName())) {
                     return localVariables.get(newNode.getName());
                 }
-            } else if (newNode.getExperssion().isPresent()) {
-                var exp = getInterpreterDataType(newNode.getExperssion().get(), localVariables);
+            } else if (newNode.getExpression().isPresent()) {
+                var exp = getInterpreterDataType(newNode.getExpression().get(), localVariables);
 
                 if (!(exp instanceof InterpreterDataType)) {
                     throw new AwkException("Not an Array DataType");
@@ -503,65 +502,74 @@ if (someLine == null)
         // Return null if the node type is not recognized
         return null;
     }  
-    private String runFunctionCall(FunctionCallNode fNode,HashMap<String, InterpreterDataType> localVariables) throws AwkException{
+    private String runFunctionCall(FunctionCallNode fNode, HashMap<String, InterpreterDataType> localVariables) throws AwkException {
+    // Get the user-defined function call from the input node
+    FunctionCallNode userCallFunction = fNode;
 
-        FunctionCallNode userCallFuction = fNode;
-        if(functionDefinitions.containsKey(userCallFuction.getFunctionName())){
+    // Check if the function is defined in the functionDefinitions map
+    if (functionDefinitions.containsKey(userCallFunction.getFunctionName())) {
+        // Retrieve the function definition from the functionDefinitions map
+        FunctionDefinitionNode function = functionDefinitions.get(userCallFunction.getFunctionName());
 
-            FunctionDefinitionNode function = functionDefinitions.get(userCallFuction.getFunctionName());
+        // Validate the number of parameters in the function call
+        if (function.getParameters().length != userCallFunction.getParameters().size() && !userCallFunction.getFunctionName().equals("print")) {
+            throw new AwkException("The inputted function name \"" + userCallFunction.getFunctionName() +
+                    "\" had a parameter size of " + userCallFunction.getParameters().size() +
+                    " compared to the expected " + function.getParameters().length);
+        }
 
-                 if(function.getParameters().length != userCallFuction.getParameters().size()&& !userCallFuction.getFunctionName().equals("print"))
-                    throw new AwkException("The inputed function name \"" +userCallFuction.getFunctionName() +"\" had parameter size of " +userCallFuction.getParameters().size()+ " Compared to the expected " + function.getParameters().length);
-   
-                HashMap<String, InterpreterDataType> map = new HashMap<String, InterpreterDataType>();
-                Integer counter = 0;
+        // Create a map to store parameter values
+        HashMap<String, InterpreterDataType> map = new HashMap<>();
+        Integer counter = 0;
 
-                for(Node para : userCallFuction.getParameters()){
+        // Iterate through the parameters in the function call
+        for (Node para : userCallFunction.getParameters()) {
+            // Check if the parameter is a VariableReferenceNode in the function definition
+            if ((function.getParameters()[counter] instanceof VariableReferenceNode)) {
+                VariableReferenceNode newPara = (VariableReferenceNode) function.getParameters()[(counter++)];
 
-                    if((function.getParameters()[counter]  instanceof VariableReferenceNode)){
-                         VariableReferenceNode newpara = (VariableReferenceNode)function.getParameters()[(counter++)];
-             
-                                   if(newpara.getExperssion().isPresent())
-                                     map.put(newpara.getNameAndExperssion(), getInterpreterDataType(para, localVariables));
-                                   else
-                                     map.put(newpara.getName(), getInterpreterDataType(para, localVariables));
-                                }
-                            else{
-                                     if((para instanceof VariableReferenceNode)){
-                                         VariableReferenceNode newpara = (VariableReferenceNode)para;
-                                          if(newpara.getExperssion().isPresent())
-                                           map.put(newpara.getNameAndExperssion(), getInterpreterDataType(para, localVariables));
-                                      else
-                                           
-                                          map.put(newpara.getName(), getInterpreterDataType(para, localVariables));
+                // Add the parameter to the map with the appropriate key
+                if (newPara.getExpression().isPresent())
+                    map.put(newPara.getNameAndExperession(), getInterpreterDataType(para, localVariables));
+                else
+                    map.put(newPara.getName(), getInterpreterDataType(para, localVariables));
+            } else {
+                // Handle other types of parameters (VariableReferenceNode, OperationNode, etc.)
+                if ((para instanceof VariableReferenceNode)) {
+                    VariableReferenceNode newPara = (VariableReferenceNode) para;
+                    if (newPara.getExpression().isPresent())
+                        map.put(newPara.getNameAndExperession(), getInterpreterDataType(para, localVariables));
+                    else
+                        map.put(newPara.getName(), getInterpreterDataType(para, localVariables));
+                } else if (para instanceof OperationNode) {
+                    OperationNode newPara = (OperationNode) para;
 
-                                     } else if(para instanceof OperationNode){
-                                          OperationNode newpara = (OperationNode)para;
+                    // Handle FIELD_REFERENCE specifically and add to the map
+                    if (newPara.getOp().toString().equals("FIELD_REFERENCE"))
+                        map.put("$" + newPara.getLeftExpression().toString(), getInterpreterDataType(para, localVariables));
+                    else
+                        map.put(counter.toString(), getInterpreterDataType(para, localVariables));
+                } else {
+                    // Add the parameter to the map with a numeric key
+                    map.put(counter.toString(), getInterpreterDataType(para, localVariables));
+                }
+                counter++;
+            }
+        }
 
-                                          if(newpara.getOp().toString() == "FIELD_REFERENCE")
-                                                map.put("$" + newpara.getLeftExpression().toString(), getInterpreterDataType(para, localVariables));
-                                            
-                                          else 
-                                                map.put(counter.toString(), getInterpreterDataType(para, localVariables));
-
-                                     }else
-
-                                        map.put(counter.toString(), getInterpreterDataType(para, localVariables));
-                                        counter++;
-                                  }
-                    }
-                     if(function instanceof BuiltInFunctionDefinitionNode){
-
-                              return ((BuiltInFunctionDefinitionNode)function).execute(map);
-                        }
-
-                        else{
-                           return InterpretListOfStatements(function.getStatementNodes(), map).toString();
-                        }
-     
-       }else
-            throw new AwkException("This fucntion \""+ userCallFuction.getFunctionName() + "\" has never been defined");
+        // Check if the function is a built-in function or a user-defined function
+        if (function instanceof BuiltInFunctionDefinitionNode) {
+            // Execute the built-in function and return the result
+            return ((BuiltInFunctionDefinitionNode) function).execute(map);
+        } else {
+            // Execute the user-defined function and return the result
+            return InterpretListOfStatements(function.getStatementNodes(), map).toString();
+        }
+    } else {
+        // Throw an exception if the function has not been defined
+        throw new AwkException("This function \"" + userCallFunction.getFunctionName() + "\" has never been defined");
     }
+}
     private InterpreterDataType getOperationalIDT(Node left, Optional<Node> right, OperationNode.Operation op, HashMap<String, InterpreterDataType> localVariables) throws AwkException{
      
                     
@@ -725,10 +733,10 @@ if (someLine == null)
 
                          VariableReferenceNode newNode = (VariableReferenceNode)left;
 
-                       if(newNode.getExperssion().isPresent()){
+                       if(newNode.getExpression().isPresent()){
                            if(this.globalVariables.containsKey(newNode.getName())){
 
-                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExpression().get(), localVariables).toString()) - 1;
                                   
                                   InterpreterDataType hold = globalVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -739,10 +747,10 @@ if (someLine == null)
                       }else
                           throw new AwkException("Its emtpy");
 
-                         if(newNode.getExperssion().isPresent()){
+                         if(newNode.getExpression().isPresent()){
                            if(localVariables.containsKey(newNode.getName())){
 
-                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) - 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExpression().get(), localVariables).toString()) - 1;
                        
                                   InterpreterDataType hold = localVariables.get(newNode.getName());
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
@@ -761,27 +769,27 @@ if (someLine == null)
 
                          VariableReferenceNode newNode = (VariableReferenceNode)left;
 
-                       if(newNode.getExperssion().isPresent()){
-                           if(this.globalVariables.containsKey(newNode.getNameAndExperssion())){
-                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
+                       if(newNode.getExpression().isPresent()){
+                           if(this.globalVariables.containsKey(newNode.getNameAndExperession())){
+                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperession()).getValue()) + 1;
                                   
-                                  InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperssion());
-                                  getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
+                                  InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperession());
+                                  getGlobalVariable(newNode.getNameAndExperession()).setValue(value.toString());
                                
                                   return hold;
                            }
-                           else if(localVariables.containsKey(newNode.getNameAndExperssion())){
+                           else if(localVariables.containsKey(newNode.getNameAndExperession())){
 
-                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperssion()).getValue()) + 1;
+                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperession()).getValue()) + 1;
                                   
-                                  InterpreterDataType hold = localVariables.get(newNode.getNameAndExperssion());
-                                  getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
+                                  InterpreterDataType hold = localVariables.get(newNode.getNameAndExperession());
+                                  getGlobalVariable(newNode.getNameAndExperession()).setValue(value.toString());
                                
                                   return hold;
                            }
 
                       }
-                         if(!newNode.getExperssion().isPresent()){
+                         if(!newNode.getExpression().isPresent()){
                              if(this.globalVariables.containsKey(newNode.getName())){
 
                                 Double value = Double.parseDouble(globalVariables.get(newNode.getName()).getValue()) + 1;
@@ -812,27 +820,27 @@ if (someLine == null)
 
                          VariableReferenceNode newNode = (VariableReferenceNode)left;
 
-                       if(newNode.getExperssion().isPresent()){
-                           if(this.globalVariables.containsKey(newNode.getNameAndExperssion())){
-                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperssion()).getValue()) - 1;
+                       if(newNode.getExpression().isPresent()){
+                           if(this.globalVariables.containsKey(newNode.getNameAndExperession())){
+                                  Double value = Double.parseDouble(globalVariables.get(newNode.getNameAndExperession()).getValue()) - 1;
                                   
-                                  InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperssion());
-                                  getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
+                                  InterpreterDataType hold = globalVariables.get(newNode.getNameAndExperession());
+                                  getGlobalVariable(newNode.getNameAndExperession()).setValue(value.toString());
                                
                                   return hold;
                            }
-                           else if(localVariables.containsKey(newNode.getNameAndExperssion())){
+                           else if(localVariables.containsKey(newNode.getNameAndExperession())){
 
-                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperssion()).getValue()) -1;
+                                  Double value = Double.parseDouble(localVariables.get(newNode.getNameAndExperession()).getValue()) -1;
                                   
-                                  InterpreterDataType hold = localVariables.get(newNode.getNameAndExperssion());
-                                  getGlobalVariable(newNode.getNameAndExperssion()).setValue(value.toString());
+                                  InterpreterDataType hold = localVariables.get(newNode.getNameAndExperession());
+                                  getGlobalVariable(newNode.getNameAndExperession()).setValue(value.toString());
                                
                                   return hold;
                            }
 
                       }
-                         if(!newNode.getExperssion().isPresent()){
+                         if(!newNode.getExpression().isPresent()){
                              if(this.globalVariables.containsKey(newNode.getName())){
 
                                 Double value = Double.parseDouble(globalVariables.get(newNode.getName()).getValue()) - 1;
@@ -859,10 +867,10 @@ if (someLine == null)
                             throw new AwkException("Must be a VariableReferenceNode Node");
 
                          VariableReferenceNode newNode = (VariableReferenceNode)left;
-                       if(newNode.getExperssion().isPresent()){
+                       if(newNode.getExpression().isPresent()){
                            if(this.globalVariables.containsKey(newNode.toString())){
 
-                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExpression().get(), localVariables).toString()) + 1;
                                   
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
@@ -872,10 +880,10 @@ if (someLine == null)
                       }else
                           throw new AwkException("Its emtpy");
 
-                         if(newNode.getExperssion().isPresent()){
+                         if(newNode.getExpression().isPresent()){
                             if(localVariables.containsKey(newNode.toString())){
 
-                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExperssion().get(), localVariables).toString()) + 1;
+                                  Double value = Double.parseDouble(getInterpreterDataType(newNode.getExpression().get(), localVariables).toString()) + 1;
                        
                                   getGlobalVariable(newNode.getName()).setValue(value.toString());
                                
@@ -897,7 +905,7 @@ if (someLine == null)
                         if(right.get() instanceof VariableReferenceNode){
 
                             VariableReferenceNode newNode = (VariableReferenceNode)right.get();
-                              if(newNode.getExperssion().isEmpty())
+                              if(newNode.getExpression().isEmpty())
                                  throw new AwkException("Must be a array");
                             
                                   String value = getInterpreterDataType(left, localVariables).toString();
@@ -932,81 +940,76 @@ if (someLine == null)
         else 
             return new LineManager(new LinkedList<String>());     
     }
-    private  void addBuiltInFunctions() throws NumberFormatException, AwkException{
-
-         HashMap<String, BuiltInFunctionDefinitionNode> operations = new HashMap<>();
-      
-        BuiltInFunctionDefinitionNode printfBuilt = new BuiltInFunctionDefinitionNode("printf",test -> builtInPrint(test), true);
-        BuiltInFunctionDefinitionNode printBuilt = new BuiltInFunctionDefinitionNode("print",test -> builtInPrint(test), true);
-
-        BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline",test -> builtInGetline(test), true);
-        BuiltInFunctionDefinitionNode nextbuilt= new BuiltInFunctionDefinitionNode("next",test -> builtInGetline(test), false);
-       
-        BuiltInFunctionDefinitionNode gsubBuilt = new BuiltInFunctionDefinitionNode("gsub",test -> builtInGsub(test), true);
-        BuiltInFunctionDefinitionNode matchBuilt = new BuiltInFunctionDefinitionNode("match",test -> builtInMatch(test), true);
-        BuiltInFunctionDefinitionNode subBuilt = new BuiltInFunctionDefinitionNode("sub",test -> builtISub(test), true);
-
-        BuiltInFunctionDefinitionNode indexBuilt = new BuiltInFunctionDefinitionNode("index",test -> builtIndex(test), true);
-        BuiltInFunctionDefinitionNode lengthBuilt = new BuiltInFunctionDefinitionNode("length",test -> builtInLength(test), true);
-
-        BuiltInFunctionDefinitionNode splitBuilt = new BuiltInFunctionDefinitionNode("split",test -> builtInSplit(test), true);
-        BuiltInFunctionDefinitionNode substrBuilt = new BuiltInFunctionDefinitionNode("substr",test -> builtInSubstr(test), true);
-        BuiltInFunctionDefinitionNode tolowerBuilt = new BuiltInFunctionDefinitionNode("tolower",test -> builtInTolower(test), true);
-        BuiltInFunctionDefinitionNode toupperBuilt = new BuiltInFunctionDefinitionNode("toupper",test -> builtInToupper(test), true);
-
-                printfBuilt.setParameters(new Node[Short.MAX_VALUE]);
-                printBuilt.setParameters(new Node[Short.MAX_VALUE]);
-                gsubBuilt.setParameters(new Node[3]);
-                matchBuilt.setParameters(new Node[2]);
-                subBuilt.setParameters(new Node[3]);
-                indexBuilt.setParameters(new Node[2]);
-                lengthBuilt.setParameters(new Node[1]);
-                splitBuilt.setParameters(new Node[3]);
-                substrBuilt.setParameters(new Node[3]);
-                tolowerBuilt.setParameters(new Node[1]);
-                toupperBuilt.setParameters(new Node[1]);
-
-
-        //getline and next : these will call SplitAndAssign – we won’t do the other forms.
+    private void addBuiltInFunctions() throws NumberFormatException, AwkException {
+        // Create a HashMap to store built-in function definitions
+        HashMap<String, BuiltInFunctionDefinitionNode> operations = new HashMap<>();
+    
+        // Create instances of BuiltInFunctionDefinitionNode for each built-in function
+        BuiltInFunctionDefinitionNode printfBuilt = new BuiltInFunctionDefinitionNode("printf", test -> builtInPrint(test), true);
+        BuiltInFunctionDefinitionNode printBuilt = new BuiltInFunctionDefinitionNode("print", test -> builtInPrint(test), true);
+        BuiltInFunctionDefinitionNode getLineBuilt = new BuiltInFunctionDefinitionNode("getline", test -> builtInGetline(test), true);
+        BuiltInFunctionDefinitionNode nextbuilt = new BuiltInFunctionDefinitionNode("next", test -> builtInGetline(test), false);
+        BuiltInFunctionDefinitionNode gsubBuilt = new BuiltInFunctionDefinitionNode("gsub", test -> builtInGsub(test), true);
+        BuiltInFunctionDefinitionNode matchBuilt = new BuiltInFunctionDefinitionNode("match", test -> builtInMatch(test), true);
+        BuiltInFunctionDefinitionNode subBuilt = new BuiltInFunctionDefinitionNode("sub", test -> builtISub(test), true);
+        BuiltInFunctionDefinitionNode indexBuilt = new BuiltInFunctionDefinitionNode("index", test -> builtIndex(test), true);
+        BuiltInFunctionDefinitionNode lengthBuilt = new BuiltInFunctionDefinitionNode("length", test -> builtInLength(test), true);
+        BuiltInFunctionDefinitionNode splitBuilt = new BuiltInFunctionDefinitionNode("split", test -> builtInSplit(test), true);
+        BuiltInFunctionDefinitionNode substrBuilt = new BuiltInFunctionDefinitionNode("substr", test -> builtInSubstr(test), true);
+        BuiltInFunctionDefinitionNode tolowerBuilt = new BuiltInFunctionDefinitionNode("tolower", test -> builtInTolower(test), true);
+        BuiltInFunctionDefinitionNode toupperBuilt = new BuiltInFunctionDefinitionNode("toupper", test -> builtInToupper(test), true);
+    
+        // Set the parameters for each built-in function
+        printfBuilt.setParameters(new Node[Short.MAX_VALUE]);
+        printBuilt.setParameters(new Node[Short.MAX_VALUE]);
+        gsubBuilt.setParameters(new Node[3]);
+        matchBuilt.setParameters(new Node[2]);
+        subBuilt.setParameters(new Node[3]);
+        indexBuilt.setParameters(new Node[2]);
+        lengthBuilt.setParameters(new Node[1]);
+        splitBuilt.setParameters(new Node[3]);
+        substrBuilt.setParameters(new Node[3]);
+        tolowerBuilt.setParameters(new Node[1]);
+        toupperBuilt.setParameters(new Node[1]);
+    
+        // Add built-in functions to the HashMap
         operations.put("print", printBuilt);
         operations.put("printf", getLineBuilt);
-
         operations.put("getline", printfBuilt);
         operations.put("next", nextbuilt);
-
         operations.put("gsub", gsubBuilt);
         operations.put("match", matchBuilt);
         operations.put("sub", subBuilt);
-
         operations.put("index", indexBuilt);
         operations.put("length", lengthBuilt);
-        
         operations.put("split", splitBuilt);
         operations.put("substr", substrBuilt);
         operations.put("tolower", tolowerBuilt);
         operations.put("toupper", toupperBuilt);
-
-
-       functionDefinitions.putAll(operations);
-
+    
+        // Add all built-in functions to the functionDefinitions map
+        functionDefinitions.putAll(operations);
     }
-    private  String builtInPrint(HashMap<String, InterpreterDataType> str){
+    
+    // Implementation of the awk built-in functions
+    private String builtInPrint(HashMap<String, InterpreterDataType> str) {
         HashMap<String, InterpreterDataType> print = str;
-
-        if(print.get("0") instanceof InterpreterArrayDataType){
-                for(InterpreterDataType out: str.values()){
-                      InterpreterArrayDataType  arrayout = (InterpreterArrayDataType)out;
-                    
-                      System.out.printf ("%s", arrayout.getArray().values().toString());
-                       
-                }
-      
-         }else{
-             for(InterpreterDataType out: str.values())
-                    System.out.printf("%s", out.getValue());
-                 System.out.println("");
-         }
-                
+    
+        // Check if argument "0" is an array
+        if (print.get("0") instanceof InterpreterArrayDataType) {
+            // If it's an array, print each element
+            for (InterpreterDataType out : str.values()) {
+                InterpreterArrayDataType arrayout = (InterpreterArrayDataType) out;
+                System.out.printf("%s", arrayout.getArray().values().toString());
+            }
+        } else {
+            // If not an array, print each element with a space in between
+            for (InterpreterDataType out : str.values())
+                System.out.printf("%s", out.getValue());
+            System.out.println("");
+        }
+    
+        // Return a space (can be modified based on the requirements)
         return " ";
     }
     private  String builtInGetline(HashMap<String, InterpreterDataType> str) {
@@ -1055,86 +1058,111 @@ if (someLine == null)
 
         return Boolean.toString(matcher.find());
     }
-    private  String builtISub(HashMap<String, InterpreterDataType> str) {
-       Set<String> keys = str.keySet();
-//
-          String regexp = str.get(keys.toArray()[0]).toString();
-          String replacement = str.get(keys.toArray()[1]).toString();
-          String input = str.get(keys.toArray()[2]).toString();
+    private String builtISub(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
 
-          // Create a Matcher object
-           var matcher = java.util.regex.Pattern.compile(regexp).matcher(input);
-            if (this.globalVariables.containsKey(keys.toArray()[2])) {
-                   this.globalVariables.get(keys.toArray()[2]).setValue(matcher.replaceFirst(replacement));
-                 }
+    // Extract the regular expression, replacement, and input from the HashMap
+    String regexp = str.get(keys.toArray()[0]).toString();
+    String replacement = str.get(keys.toArray()[1]).toString();
+    String input = str.get(keys.toArray()[2]).toString();
 
-        return Boolean.toString(matcher.find());
+    // Create a Matcher object using the specified regular expression and input
+    var matcher = java.util.regex.Pattern.compile(regexp).matcher(input);
+
+    // Check if the input key is present in the global variables map
+    if (this.globalVariables.containsKey(keys.toArray()[2])) {
+        // If present, update the global variable with the result of replaceFirst
+        this.globalVariables.get(keys.toArray()[2]).setValue(matcher.replaceFirst(replacement));
     }
-    private  String builtIndex(HashMap<String, InterpreterDataType> str){
-         Set<String> keys = str.keySet();
 
-         String string = str.get(keys.toArray()[0]).toString();
-         String search = str.get(keys.toArray()[1]).toString();
- 
-        int index = string.indexOf(search);
-            if(index != -1)
-               return "true";    
-             else 
-               return "false";   
+    // Return a boolean indicating whether a match was found
+    return Boolean.toString(matcher.find());
+}
+    private String builtIndex(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
+
+    // Extract the string and search values from the HashMap
+    String string = str.get(keys.toArray()[0]).toString();
+    String search = str.get(keys.toArray()[1]).toString();
+
+    // Find the index of the search string in the given string
+    int index = string.indexOf(search);
+
+    // Return "true" if the search string is found, otherwise return "false"
+    return (index != -1) ? "true" : "false";
+}
+    private String builtInLength(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
+
+    // Extract the string value from the HashMap
+    String string = str.get(keys.toArray()[0]).toString();
+
+    // Get the length of the string and convert it to a string
+    int length = string.length();
+    return Integer.toString(length);
+}
+    private String builtInSplit(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
+
+    // Extract the string, separator, and array key from the HashMap
+    String string = str.get(keys.toArray()[0]).toString();
+    String separator = str.get(keys.toArray()[1]).toString();
+
+    // Split the string using the specified separator
+    String[] newlist = string.split(separator);
+
+    // Iterate over the split elements and store them in the globalVariables map
+    for (Integer i = 0; i != newlist.length; i++) {
+        // Use the array key with an index to store each split element as a global variable
+        globalVariables.put(keys.toArray()[2].toString() + "[" + Double.parseDouble(i.toString()) + "]", new InterpreterDataType(newlist[i]));
     }
-    private  String builtInLength(HashMap<String, InterpreterDataType> str){
-        Set<String> keys = str.keySet();
 
-          String string = str.get(keys.toArray()[0]).toString();
+    // Return the number of elements resulting from the split
+    return Integer.toString(newlist.length);
+}
+    private String builtInSubstr(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
 
-          int index = string.length();
+    // Extract the string, start, and length values from the HashMap
+    String string = str.get(keys.toArray()[0]).toString();
+    String start = str.get(keys.toArray()[1]).toString();
+    String length = str.get(keys.toArray()[2]).toString();
 
-        return Integer.toString(index);
-    }   
-    private  String builtInSplit(HashMap<String, InterpreterDataType> str){
-        //split(string, array, separator)
-           Set<String> keys = str.keySet();
+    // Convert start and length to integers and extract the substring
+    String sub = string.substring((int) (Double.parseDouble(start)), (int) (Double.parseDouble(length)));
 
-        String string = str.get(keys.toArray()[0]).toString();
-        String separator = str.get(keys.toArray()[1]).toString();
+    // Return the extracted substring
+    return sub;
+}
+    private String builtInTolower(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
 
-        String[] newlist = string.split(separator);
+    // Extract the string value from the HashMap
+    String regexp = str.get(keys.toArray()[0]).toString();
 
-              for(Integer i = 0; i != newlist.length; i++)
-                 globalVariables.put(keys.toArray()[2].toString() + "[" +Double.parseDouble(i.toString())+"]", new InterpreterDataType(newlist[i]));
-        
+    // Convert the string to lowercase
+    String lower = regexp.toLowerCase();
 
-        return Integer.toString(newlist.length);
-    } 
-    private  String builtInSubstr(HashMap<String, InterpreterDataType> str){
-       // substr(string, start, length)
-       Set<String> keys = str.keySet();
+    // Return the lowercase string
+    return lower;
+}
+    private String builtInToupper(HashMap<String, InterpreterDataType> str) {
+    // Get the set of keys from the input HashMap
+    Set<String> keys = str.keySet();
 
-          String string = str.get(keys.toArray()[0]).toString();
-          String start = str.get(keys.toArray()[1]).toString();
-          String length = str.get(keys.toArray()[2]).toString();
+    // Extract the string value from the HashMap
+    String regexp = str.get(keys.toArray()[0]).toString();
 
+    // Convert the string to uppercase
+    String upper = regexp.toUpperCase();
 
-       // String linput = "Hello, World";
-        String sub = string.substring((int)(Double.parseDouble(start)), (int)(Double.parseDouble(length)));
-        
-        return sub;
-    }   
-    private  String builtInTolower(HashMap<String, InterpreterDataType> str){
-       Set<String> keys = str.keySet();
-
-        String regexp = str.get(keys.toArray()[0]).toString();
-        String lower = regexp.toLowerCase();
-
-        return lower;
-    } 
-    private  String builtInToupper(HashMap<String, InterpreterDataType> str){
-       Set<String> keys = str.keySet();
-
-            String regexp = str.get(keys.toArray()[0]).toString();
-            String upper = regexp.toUpperCase();
-
-        return upper;
-    }    
-
+    // Return the uppercase string
+    return upper;
+}
 }

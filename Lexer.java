@@ -135,7 +135,6 @@ private void ProcessComments() {
 
     // Loop until a newline character is encountered
     while (helper.GetChar() != '\n') {
-      
         // Check if there are no more characters to process
         if (helper.Peek(1) == null) {
             word += helper.GetChar();

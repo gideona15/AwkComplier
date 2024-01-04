@@ -12,10 +12,10 @@ public class VariableReferenceNode extends StatementNode {
     public String getName(){
         return name;
     }
-    public Optional<Node> getExperssion(){
+    public Optional<Node> getExpression(){
         return expression;
     }
-    public String getNameAndExperssion(){
+    public String getNameAndExperession(){
         if(expression.isPresent())
             return name + "["+expression.get()+"]";
         else 
