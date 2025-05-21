@@ -95,7 +95,7 @@ Future Improvements
 
 Author
 ------
-
+Michael Phillips
 Gideon Appenteng  
 LinkedIn: https://www.linkedin.com/in/gideon-appenteng/  
 GitHub: https://github.com/gideona15
